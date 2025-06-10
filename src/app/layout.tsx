@@ -22,7 +22,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${proximaVara.variable} font-proxima-vara antialiased min-h-screen`}
+        className={`${proximaVara.variable} selection:text-white selection:bg-primary font-proxima-vara antialiased min-h-screen`}
       >
         <ThemeProvider attribute="class"> {children}</ThemeProvider>
       </body>

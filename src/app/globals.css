@@ -4,7 +4,7 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: 293.7 46.3% 92%;
+  --background: 292, 43%, 93%;
   --foreground: 296 56% 21%;
   --card: 291 54% 97%;
   --card-foreground: 240 10% 30%;
@@ -50,7 +50,7 @@
 
 .boring-dark,
 .dark {
-  --background: 313.8 24.5% 10.4%;
+  --background: 318, 21%, 9%;
   --foreground: 270 20% 97.8%;
   --card: 300 15.8% 3.7%;
   --card-foreground: 240 4.8% 95.9%;
@@ -85,7 +85,7 @@
   --gradient-noise-top: 309 15% 9%;
   --color-heading: 328.2 45.9% 57.3%;
   --chat-border: 333.3 22% 16.1%;
-  --chat-background: 270 16.13% 12.16%;
+  --chat-background:270, 15%, 13%;
   --chat-accent: rgba(25, 21, 30, 0.86);
   --chat-input-gradient: 289 23% 23%;
   --chat-input-background: hsla(270, 10%, 20%, var(--blur-fallback, 0.4));
@@ -282,3 +282,4 @@ body {
   mask-composite: exclude;
   opacity: var(--opacity, 1);
 }
+

@@ -1,9 +1,11 @@
 'use client'
-import React, { useState } from 'react'
+import { useTheme } from 'next-themes'
+import React  from 'react'
+import { FiMoon, FiSun } from 'react-icons/fi'
+
 
 const ThemeToggle = () => {
-    const [theme, setTheme] = useState('light')
-
+    const { theme, setTheme } = useTheme()
     const toggleTheme = () => {
         if (theme === 'light') {
             setTheme('dark')
@@ -14,8 +16,9 @@ const ThemeToggle = () => {
     
   return (
     <>
-    <button onClick={() => setTheme('light')}>Light Mode</button>
-    <button onClick={() => setTheme('dark')}>Dark Mode</button>
+    <button onClick={toggleTheme}>
+    {theme === 'light' ? <FiSun/> : <FiMoon className='theme-btn-moon' />}
+    </button>
     </>
   )
 }

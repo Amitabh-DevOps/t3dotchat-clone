@@ -3,7 +3,6 @@ import T3Button from "./t3-button";
 import SidebarLogo from "./sidebar-logo";
 import { Button } from "../ui/button";
 import { FiSearch, FiSidebar } from "react-icons/fi";
-import { Input } from "../ui/input";
 import DevInput from "./dev-input";
 
 const Sidebar = () => {
@@ -13,7 +12,7 @@ const Sidebar = () => {
         <Button variant="ghost" size="icon">
           <FiSidebar />
         </Button>
-        <div className="grid place-items-center flex-1 pr-8 *:!text-pink-700">
+        <div className="grid place-items-center flex-1 pr-8 *:!text-[--wordmark-color]">
           <SidebarLogo />
         </div>
       </div>

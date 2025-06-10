@@ -1,12 +1,8 @@
-import ThemeToggle from '@/components/global-cmp/theme-toggle'
-import React from 'react'
+import ThemeToggle from "@/components/global-cmp/theme-toggle";
+import React from "react";
 
 const page = () => {
-  return (
-    <div>
-      <ThemeToggle/>
-    </div>
-  )
-}
+  return <div></div>;
+};
 
-export default page
+export default page;
