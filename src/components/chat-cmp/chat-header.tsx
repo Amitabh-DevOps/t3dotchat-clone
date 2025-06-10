@@ -3,17 +3,11 @@ import { LuSettings2 } from "react-icons/lu";
 import ThemeToggle from "../global-cmp/theme-toggle";
 const ChatHeader = () => {
   return (
-    <div className="p-1 w-full">
       <div
-        className="fixed grid place-items-center -right-4 top-0 z-20 h-16 w-32 max-sm:hidden"
+        className="absolute grid place-items-center -right-4 top-0 !z-50 h-16 w-32 max-sm:hidden"
         style={{ clipPath: "inset(0px 12px 0px 0px)" }}
       >
-        <div className="flex items-center gap-4 pb-2 text-muted-foreground z-50">
-          <button>
-            <LuSettings2 />
-          </button>
-          <ThemeToggle />
-        </div>
+        
         <div
           className="group pointer-events-none absolute top-3.5 z-10 -mb-8 h-32 w-full origin-top ease-snappy"
           style={{
@@ -54,7 +48,6 @@ const ChatHeader = () => {
           </svg>
         </div>
       </div>
-    </div>
   );
 };
 
