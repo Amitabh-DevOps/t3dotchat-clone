@@ -1,7 +1,7 @@
 'use server';
 import mongoose, { Document } from "mongoose";
 
-export interface ChatType extends Document {
+export interface MessageType extends Document {
   threadId: mongoose.Types.ObjectId;
   userQuery: string;
   aiResponse: [

@@ -1,8 +1,8 @@
 'use server';
 import mongoose, { Schema } from "mongoose";
-import { ChatType } from "@/types/chat.type";
+import { MessageType } from "@/types/chat.type";
 
-const ChatSchema = new Schema<ChatType>(
+const MessageSchema = new Schema<MessageType>(
   {
     threadId: {
         type: Schema.Types.ObjectId,
@@ -30,6 +30,6 @@ const ChatSchema = new Schema<ChatType>(
   { timestamps: true }
 );
 
-const Chat = mongoose.models?.Chat || mongoose.model<ChatType>("Chat", ChatSchema);
+const Message = mongoose.models?.Message || mongoose.model<MessageType>("Message", MessageSchema);
 
-export default Chat;
+export default Message;
