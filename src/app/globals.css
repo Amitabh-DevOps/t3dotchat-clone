@@ -85,7 +85,7 @@
   --gradient-noise-top: 309 15% 9%;
   --color-heading: 328.2 45.9% 57.3%;
   --chat-border: 333.3 22% 16.1%;
-  --chat-background:270, 15%, 13%;
+  --chat-background: 270 16.13% 12.16%;
   --chat-accent: rgba(25, 21, 30, 0.86);
   --chat-input-gradient: 289 23% 23%;
   --chat-input-background: hsla(270, 10%, 20%, var(--blur-fallback, 0.4));
@@ -219,7 +219,6 @@
 @layer base {
 }
 
-
 body {
   background-color: var(--color-background);
   color: var(--color-foreground);
@@ -240,6 +239,9 @@ body {
 }
 
 .border-reflect {
+  --c: 320 100% 75%;
+  --min: hsl(var(--c) / 0.2);
+  --max: hsl(var(--c) / 1);
   --gradientBorder-gradient: linear-gradient(
       180deg,
       var(--min),
@@ -248,6 +250,7 @@ body {
     ),
     linear-gradient(15deg, var(--min) 50%, var(--max));
   --opacity: 1;
+  --start: rgba(0, 0, 0, 0.85);
   position: relative;
 }
 
@@ -255,11 +258,12 @@ body {
 .dark .border-reflect {
   --gradientBorder-gradient: linear-gradient(
       180deg,
-      var(--min),
-      var(--max),
-      var(--min)
+      #93335b00,
+      #93335bbd,
+      #93335b17
     ),
-    linear-gradient(15deg, var(--min) 50%, var(--max));
+    linear-gradient(15deg, #93335b1f 50%, #93335bbd);
+  --start: rgba(0, 0, 0, 0.92);
 }
 
 .border-reflect:before {
@@ -282,4 +286,3 @@ body {
   mask-composite: exclude;
   opacity: var(--opacity, 1);
 }
-
