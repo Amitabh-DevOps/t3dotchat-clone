@@ -1,6 +1,7 @@
 'use client'
 import React, { useState } from "react";
 import { ArrowUp, ChevronDown, Globe, Paperclip } from "lucide-react";
+import { Button } from "../ui/button";
 
 const ChatInput = ({
   placeholder = "Type your message here...",
@@ -64,14 +65,15 @@ const ChatInput = ({
             </div>
             <div className="-mb-px mt-2 flex w-full flex-row-reverse justify-between">
               <div className="-mr-0.5 -mt-0.5 flex items-center justify-center gap-2" aria-label="Message actions">
-                <button
-                  className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 border-reflect button-reflect bg-[rgb(162,59,103)] font-semibold shadow hover:bg-[#d56698] active:bg-[rgb(162,59,103)] disabled:hover:bg-[rgb(162,59,103)] disabled:active:bg-[rgb(162,59,103)] dark:bg-primary/20 dark:hover:bg-pink-800/70 dark:active:bg-pink-800/40 disabled:dark:hover:bg-primary/20 disabled:dark:active:bg-primary/20 h-9 w-9 relative rounded-lg p-2 text-pink-50"
+                <Button
+                  variant="t3"
                   type="submit"
+                  size="icon"
                   disabled={!inputValue.trim()}
                   aria-label={inputValue.trim() ? "Send message" : "Message requires text"}
                 >
                   <ArrowUp className="!size-5" />
-                </button>
+                </Button>
               </div>
               <div className="flex flex-col gap-2 pr-2 sm:flex-row sm:items-center">
                 <div className="ml-[-7px] flex items-center gap-1">
