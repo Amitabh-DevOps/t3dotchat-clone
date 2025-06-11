@@ -1,3 +1,4 @@
+"use server";
 import connectDB from "@/config/db";
 import { serializeData } from "@/lib/constant";
 import Thread from "@/models/thread.model";

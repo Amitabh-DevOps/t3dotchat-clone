@@ -17,7 +17,17 @@ const ThreadSchema = new Schema<ThreadType>(
     isPinned: {
         type: Boolean,
         default: false,
-    }
+    },
+    parentChatId: {
+      type: Schema.Types.ObjectId,
+      ref: "Message",
+      default: null,
+    },
+    shareChatId: {
+      type: Schema.Types.ObjectId,
+      ref: "Message",
+      default: null,
+    },
   },
   { timestamps: true }
 );
