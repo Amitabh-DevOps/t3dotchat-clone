@@ -1,3 +1,4 @@
+"use server";
 import { auth } from "@/auth";
 import Message from "@/models/message.model";
 import { serializeData } from "@/lib/constant";
