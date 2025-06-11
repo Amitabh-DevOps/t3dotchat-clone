@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import { ThemeProvider } from "next-themes";
 
 const proximaVara = localFont({
   src: "../assets/fonts/proxima_vara.woff2",
@@ -20,8 +21,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${proximaVara.variable} font-proxima-vara antialiased`}>
-        {children}
+      <body
+        className={`${proximaVara.variable} selection:text-white selection:bg-primary font-proxima-vara antialiased min-h-screen`}
+      >
+        <ThemeProvider attribute="class"> {children}</ThemeProvider>
       </body>
     </html>
   );
