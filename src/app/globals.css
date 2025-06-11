@@ -221,6 +221,19 @@
 @layer base {
 }
 
+:host,
+html {
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+  -moz-tab-size: 4;
+  tab-size: 4;
+  font-family: ProximaVara, ui-sans-serif, system-ui, sans-serif,
+    Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+  font-feature-settings: normal;
+  font-variation-settings: normal;
+  -webkit-tap-highlight-color: transparent;
+}
+
 body {
   background-color: var(--color-background);
   color: var(--color-foreground);
@@ -289,22 +302,119 @@ body {
   opacity: var(--opacity, 1);
 }
 
-.dark {
-  --sidebar: hsl(240 5.9% 10%);
-  --sidebar-foreground: hsl(240 4.8% 95.9%);
-  --sidebar-primary: hsl(224.3 76.3% 48%);
-  --sidebar-primary-foreground: hsl(0 0% 100%);
-  --sidebar-accent: hsl(240 3.7% 15.9%);
-  --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
-  --sidebar-border: hsl(240 3.7% 15.9%);
-  --sidebar-ring: hsl(217.2 91.2% 59.8%);
-}
-
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.4);
+  border-radius: 4px;
+  border: 1px solid transparent;
+  background-clip: content-box;
+  -webkit-background-clip: content-box;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.2);
+  border-radius: 4px;
+  border: 1px solid transparent;
+  background-clip: content-box;
+  -webkit-background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  border: 2px solid transparent;
+  background: hsl(var(--muted-foreground) / 0.5);
+}
+
+.small-scrollbar::-webkit-scrollbar {
+  width: 4px !important;
+  height: 4px !important;
+}
+
+.small-scrollbar[data-scrolling="true"]::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.4);
+}
+
+.dark .small-scrollbar[data-scrolling="true"]::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.2);
+}
+
+.small-scrollbar::-webkit-scrollbar-thumb {
+  transition: background 0.2s ease-in-out;
+  background: transparent;
+  border-radius: 4px;
+  border: 1.5px solid transparent;
+  background-clip: content-box;
+  -webkit-background-clip: content-box;
+}
+
+.small-scrollbar::-webkit-scrollbar-thumb:hover {
+  border: 1px solid transparent;
+  background: hsl(var(--muted-foreground) / 0.5);
+}
+
+@supports (-moz-appearance: none) {
+  .firefox-scrollbar-margin-fix {
+    --firefox-scrollbar: 10px;
+  }
+}
+.scroll-shadow:not([data-shadow="false"]) {
+  --shadow-height: 20px;
+  --scrollbar-width: 8px;
+  mask-image: linear-gradient(
+      to bottom,
+      transparent,
+      #000 var(--shadow-height),
+      #000 calc(100% - var(--shadow-height)),
+      transparent 100%
+    ),
+    linear-gradient(
+      to left,
+      #fff var(--scrollbar-width),
+      transparent var(--scrollbar-width)
+    );
+  -webkit-mask-image: linear-gradient(
+      to bottom,
+      transparent,
+      #000 var(--shadow-height),
+      #000 calc(100% - var(--shadow-height)),
+      transparent 100%
+    ),
+    linear-gradient(
+      to left,
+      #fff var(--scrollbar-width),
+      transparent var(--scrollbar-width)
+    );
+}
+@supports (not (backdrop-filter: blur())) and (not (overscroll-behavior: auto)) {
+  :root {
+    --blur-fallback: 1;
+  }
+}
+@media (max-width: 767px) and (any-pointer: coarse) {
+  .min-h-pwa,
+  body,
+  html {
+    overscroll-behavior-y: none;
   }
 }
