@@ -96,12 +96,23 @@ const SidebarProvider = React.forwardRef<
     const setOpen = React.useCallback(
       (value: boolean | ((value: boolean) => boolean)) => {
         const openState = typeof value === "function" ? value(open) : value;
+        console.log("Sidebar open state changed", openState);
+        
         if (setOpenProp) {
           setOpenProp(openState);
         } else {
           _setOpen(openState);
         }
-
+      
+        // Target checkbox with name "sidebar-check" and set its checked state
+        const sidebarCheckboxes = document.querySelectorAll('input[type="checkbox"][name="sidebar-check"]') as NodeListOf<HTMLInputElement>;
+       
+        if (sidebarCheckboxes.length > 0) {
+          sidebarCheckboxes.forEach(checkbox => {
+            checkbox.checked = !openState;
+          });
+        }
+      
         // This sets the cookie to keep the sidebar state.
         document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
       },

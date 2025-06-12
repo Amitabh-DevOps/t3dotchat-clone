@@ -1,4 +1,3 @@
-"use client";
 import * as React from "react";
 import { IoMdClose } from "react-icons/io";
 import {
@@ -26,72 +25,45 @@ import { FiPlus, FiSidebar } from "react-icons/fi";
 import DevInput from "@/components/global-cmp/dev-input";
 import { FiSearch } from "react-icons/fi";
 import ChatHeader from "@/components/chat-cmp/chat-header";
-import { LuPin, LuPinOff, LuSettings2 } from "react-icons/lu";
+import { LuLogIn, LuPin, LuPinOff, LuSettings2 } from "react-icons/lu";
 import ThemeToggle from "@/components/global-cmp/theme-toggle";
 import Link from "next/link";
-import BranchOffIcon from "../../../public/icons/branch-off";
+import BranchOffIcon from "../../../../public/icons/branch-off";
+import { auth } from "@/auth";
+import ChatInput from "@/components/chat-cmp/chat-input";
 
-// Create a wrapper component to access sidebar state
 function ChatLayoutContent({ children }: { children: React.ReactNode }) {
-  const { state } = useSidebar();
-  const isSidebarCollapsed = state === "collapsed";
-
   return (
-    <div
-      className={` h-screen w-full flex flex-col overflow-hidden transition-all duration-300 ease-snappy ${
-        isSidebarCollapsed ? "ml-0" : ""
-      }`}
-    >
-      {/* ChatHeader with conditional transform */}
-      <div
-        className={`transition-transform z-50 relative duration-300 ease-snappy ${
-          isSidebarCollapsed
-            ? "-translate-y-full opacity-0 pointer-events-none"
-            : "translate-y-0 opacity-100"
-        }`}
-      >
-        <div
-          className={`transition-transform duration-100 ease-snappy ${
-            isSidebarCollapsed
-              ? "-translate-y-full opacity-0 pointer-events-none"
-              : "translate-y-0 opacity-100  p-1"
-          }`}
-        >
-          <ChatHeader />
-        </div>
-      </div>
-
-      {/* Main container that adapts to sidebar state */}
+    <div className={` h-screen w-full flex flex-col overflow-hidden `}>
+      <ChatHeader />
       <main
         className={`
-         flex-1 overflow-hidden z-20 border-chat-border bg-chat-background 
-         transition-all duration-300 ease-snappy
-        ${
-          isSidebarCollapsed
-            ? "mt-0 h-screen" // Full height when sidebar closed
-            : "mt-1.5 h-full border rounded-tl-xl" // Normal height when sidebar open
-        }
+         flex-1 overflow-hidden z-20  border-chat-border bg-chat-background 
+         transition-all mt-3.5 h-full border rounded-tl-xl duration-150 ease-snappy has-[.sidebar-check:checked]:mt-0 has-[.sidebar-check:checked]:h-screen has-[.sidebar-check:checked]:rounded-none
+        
       `}
       >
-        <div
-          className={`
-          mx-auto relative max-w-3xl h-full flex w-full flex-col space-y-12 px-4 pb-10
-          transition-all duration-300 ease-snappy
-        `}
-        >
-          {children}
+        <input
+          className="hidden sidebar-check"
+          type="checkbox"
+          name="sidebar-check"
+        />
+        <div className=" h-full overflow-y-auto">{children}</div>
+        <div className="max-w-3xl relative mx-auto w-full">
+          <ChatInput />
         </div>
       </main>
 
       <div className="pointer-events-auto fixed h-fit left-2 top-2 z-50 flex flex-row gap-0.5 p-1 inset-0 right-auto text-muted-foreground rounded-md backdrop-blur-sm transition-[background-color,width] delay-125 duration-125  bg-sidebar blur-fallback:bg-sidebar max-sm:delay-125 max-sm:duration-125 max-sm:w-[6.75rem] max-sm:bg-sidebar">
         <SidebarTrigger />
         <div
-          className={`transition-all flex flex-nowrap duration-200 ease-snappy gap-0.5 ${
-            isSidebarCollapsed
-              ? ""
-              : "-translate-x-[20px] opacity-0 w-0 -z-50 h-0"
-          }`}
+          className={`transition-all flex flex-nowrap duration-150 ease-snappy gap-0.5 has-[.sidebar-check:not(:checked)]:-translate-x-[20px] has-[.sidebar-check:not(:checked)]:opacity-0 has-[.sidebar-check:not(:checked)]:w-0 has-[.sidebar-check:not(:checked)]:-z-50 has-[.sidebar-check:not(:checked)]:h-0 `}
         >
+          <input
+            className="hidden sidebar-check"
+            type="checkbox"
+            name="sidebar-check"
+          />
           <Button variant="ghost" size="icon">
             <FiSearch />
           </Button>
@@ -101,10 +73,13 @@ function ChatLayoutContent({ children }: { children: React.ReactNode }) {
         </div>
       </div>
       <div
-        className={`fixed pointer-events-auto  right-2  top-2 z-50 flex flex-row p-1 items-center justify-center   rounded-md  transition-background ease-snappy   max-sm:w-[6.75rem]   gap-2  text-muted-foreground  ${
-          isSidebarCollapsed ? "bg-sidebar backdrop-blur-sm" : "bg-transparent"
-        }`}
+        className={`fixed pointer-events-auto  right-2  top-2 z-50 flex flex-row p-1 items-center justify-center  rounded-md duration-150  transition-background ease-snappy   max-sm:w-[6.75rem]   gap-2  text-muted-foreground has-[.sidebar-check:checked]:bg-sidebar has-[.sidebar-check:checked]:backdrop-blur-sm has-[.sidebar-check:not(:checked)]:bg-transparent`}
       >
+        <input
+          className="hidden sidebar-check"
+          type="checkbox"
+          name="sidebar-check"
+        />
         <Button variant="ghost" size="icon">
           <LuSettings2 />
         </Button>
@@ -114,11 +89,13 @@ function ChatLayoutContent({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function ChatLayout({
+export default async function ChatLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await auth();
+
   return (
     <>
       <SidebarProvider>
@@ -357,25 +334,35 @@ export default function ChatLayout({
           </SidebarContent>
           <SidebarFooter>
             <SidebarMenu>
-              <SidebarMenuItem className="flex rounded-lg  p-2.5 mb-2 w-full hover:bg-sidebar-accent min-w-0 flex-row items-center gap-3">
-                <img
-                  src=""
-                  alt=""
-                  className="h-8 w-8 bg-accent rounded-full ring-1 ring-muted-foreground/20"
-                />
-                <div className="flex min-w-0 flex-col text-foreground">
-                  <span className="truncate text-sm font-medium">
-                    Devyansh Yadav
-                  </span>
-                  <span className="text-xs">Free</span>
-                </div>
-              </SidebarMenuItem>
+              {session ? (
+                <SidebarMenuItem className="flex rounded-lg  p-2.5 mb-2 w-full hover:bg-sidebar-accent min-w-0 flex-row items-center gap-3">
+                  <img
+                    src={session.user?.image || ""}
+                    alt={session.user?.name || ""}
+                    className="h-8 w-8 bg-accent rounded-full ring-1 ring-muted-foreground/20"
+                  />
+                  <div className="flex min-w-0 flex-col text-foreground">
+                    <span className="truncate text-sm font-medium">
+                      {session.user?.name}
+                    </span>
+                    <span className="text-xs">Free</span>
+                  </div>
+                </SidebarMenuItem>
+              ) : (
+                <SidebarMenuItem className="p-1">
+                  <Link
+                    href="/auth"
+                    className="flex rounded-lg p-2.5 py-4 mb-1 w-full hover:bg-sidebar-accent min-w-0 flex-row items-center gap-4 text-[16px]"
+                  >
+                    <LuLogIn size={18} /> Login
+                  </Link>
+                </SidebarMenuItem>
+              )}
             </SidebarMenu>
           </SidebarFooter>
           <SidebarRail />
         </Sidebar>
 
-        {/* Use the wrapper component that has access to sidebar state */}
         <ChatLayoutContent>{children}</ChatLayoutContent>
       </SidebarProvider>
     </>

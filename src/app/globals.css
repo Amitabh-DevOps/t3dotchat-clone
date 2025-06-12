@@ -418,3 +418,7 @@ body {
     overscroll-behavior-y: none;
   }
 }
+
+#chat-input {
+  field-sizing: content; 
+}

@@ -28,12 +28,12 @@ export const getThread = async () => {
   } catch (error: any) {
     return {
       data: null,
-      error: error,
+      error: error.message,
     };
   }
 };
 
-export const createThread = async ({ title }: { title?: string }) => {
+export const createThread = async ({ title , threadId }: { title?: string , threadId: string}) => {
   const session = await auth();
 
   if (!session?.user) {
@@ -45,11 +45,11 @@ export const createThread = async ({ title }: { title?: string }) => {
 
   try {
     await connectDB();
-
     const thread = await Thread.create({
+      threadId: threadId,
       userId: session.user.id,
       title: title || "New Thread",
-    });
+      });
 
     return {
       data: serializeData(thread),
@@ -58,7 +58,7 @@ export const createThread = async ({ title }: { title?: string }) => {
   } catch (error: any) {
     return {
       data: null,
-      error: error,
+      error: error.message,
     };
   }
 };
@@ -77,7 +77,7 @@ export const pinThread = async ({ threadId }: { threadId: string }) => {
     await connectDB();
 
     const thread = await Thread.findOne({
-      _id: threadId,
+      threadId: threadId,
       userId: session.user.id,
     });
 
@@ -123,7 +123,7 @@ export const renameThread = async ({
     await connectDB();
 
     const thread = await Thread.findOne({
-      _id: threadId,
+      threadId: threadId,
       userId: session.user.id,
     });
 
@@ -163,7 +163,7 @@ export const deleteThread = async ({ threadId }: { threadId: string }) => {
     await connectDB();
     
     const thread = await Thread.findOne({
-      _id: threadId,
+      threadId: threadId,
       userId: session.user.id,
     });
 
@@ -174,7 +174,7 @@ export const deleteThread = async ({ threadId }: { threadId: string }) => {
       };
     }
 
-    await Thread.deleteOne({ _id: threadId });
+    await Thread.deleteOne({  threadId: threadId });
 
     await Message.deleteMany({ threadId: threadId });
 
