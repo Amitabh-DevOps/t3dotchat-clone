@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
-
+import { auth } from '@/auth'
+import { createMessage } from '@/action/message.action';
+import { createThread } from '@/action/thread.action';
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
   baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/"
@@ -8,6 +10,7 @@ const openai = new OpenAI({
 
 
 export async function POST(request: NextRequest) {
+  const session = await auth()
   try {
     const { messages } = await request.json();
 
@@ -16,7 +19,7 @@ export async function POST(request: NextRequest) {
     }
 
     const stream = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: 'gemini-2.0-flash',
       messages: messages,
       stream: true,
     });

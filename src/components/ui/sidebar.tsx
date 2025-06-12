@@ -96,12 +96,23 @@ const SidebarProvider = React.forwardRef<
     const setOpen = React.useCallback(
       (value: boolean | ((value: boolean) => boolean)) => {
         const openState = typeof value === "function" ? value(open) : value;
+        console.log("Sidebar open state changed", openState);
+        
         if (setOpenProp) {
           setOpenProp(openState);
         } else {
           _setOpen(openState);
         }
-
+      
+        // Target checkbox with name "sidebar-check" and set its checked state
+        const sidebarCheckboxes = document.querySelectorAll('input[type="checkbox"][name="sidebar-check"]') as NodeListOf<HTMLInputElement>;
+       
+        if (sidebarCheckboxes.length > 0) {
+          sidebarCheckboxes.forEach(checkbox => {
+            checkbox.checked = !openState;
+          });
+        }
+      
         // This sets the cookie to keep the sidebar state.
         document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
       },
@@ -442,7 +453,7 @@ const SidebarHeader = React.forwardRef<
     <div
       ref={ref}
       data-sidebar="header"
-      className={cn("flex flex-col gap-2 p-2", className)}
+      className={cn("flex flex-col gap-2 relative m-1 mb-0 space-y-1 p-0 !pt-safe", className)}
       {...props}
     />
   );
@@ -457,7 +468,7 @@ const SidebarFooter = React.forwardRef<
     <div
       ref={ref}
       data-sidebar="footer"
-      className={cn("flex flex-col gap-2 p-2", className)}
+      className={cn("flex flex-col gap-2 p-2 px-3", className)}
       {...props}
     />
   );
@@ -488,7 +499,7 @@ const SidebarContent = React.forwardRef<
       ref={ref}
       data-sidebar="content"
       className={cn(
-        "flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden",
+        "flex min-h-0 flex-1 flex-col overflow-auto group-data-[collapsible=icon]:overflow-hidden small-scrollbar mr-2 scroll-shadow relative",
         className
       )}
       {...props}
@@ -505,7 +516,7 @@ const SidebarGroup = React.forwardRef<
     <div
       ref={ref}
       data-sidebar="group"
-      className={cn("relative flex w-full min-w-0 flex-col p-2", className)}
+      className={cn("relative flex w-full min-w-0 flex-col p-2 px-3.5 ", className)}
       {...props}
     />
   );
@@ -523,7 +534,7 @@ const SidebarGroupLabel = React.forwardRef<
       ref={ref}
       data-sidebar="group-label"
       className={cn(
-        "flex h-8 shrink-0 items-center rounded-md px-2 text-xs font-medium text-sidebar-foreground/70 outline-hidden ring-sidebar-ring transition-[margin,opacity] ease-snappy focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0",
+        "flex h-8 shrink-0 items-center rounded-md px-2 text-xs font-medium text-color-heading outline-hidden ring-sidebar-ring transition-[margin,opacity] ease-snappy focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0",
         "group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0",
         className
       )}
@@ -589,7 +600,7 @@ const SidebarMenuItem = React.forwardRef<
   <li
     ref={ref}
     data-sidebar="menu-item"
-    className={cn("group/menu-item relative", className)}
+    className={cn("group/menu-item text-muted-foreground px-3 relative text-sm", className)}
     {...props}
   />
 ));

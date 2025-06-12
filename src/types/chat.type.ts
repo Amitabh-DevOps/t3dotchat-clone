@@ -2,7 +2,7 @@
 import mongoose, { Document } from "mongoose";
 
 export interface MessageType extends Document {
-  threadId: mongoose.Types.ObjectId;
+  threadId: string;
   userQuery: string;
   aiResponse: [
     {

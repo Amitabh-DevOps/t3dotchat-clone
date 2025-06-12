@@ -1,0 +1,370 @@
+import * as React from "react";
+import { IoMdClose } from "react-icons/io";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuAction,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
+  SidebarProvider,
+  SidebarRail,
+  SidebarTrigger,
+  useSidebar,
+} from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
+import SidebarLogo from "@/components/global-cmp/sidebar-logo";
+import { FiPlus, FiSidebar } from "react-icons/fi";
+import DevInput from "@/components/global-cmp/dev-input";
+import { FiSearch } from "react-icons/fi";
+import ChatHeader from "@/components/chat-cmp/chat-header";
+import { LuLogIn, LuPin, LuPinOff, LuSettings2 } from "react-icons/lu";
+import ThemeToggle from "@/components/global-cmp/theme-toggle";
+import Link from "next/link";
+import BranchOffIcon from "../../../../public/icons/branch-off";
+import { auth } from "@/auth";
+import ChatInput from "@/components/chat-cmp/chat-input";
+
+function ChatLayoutContent({ children }: { children: React.ReactNode }) {
+  return (
+    <div className={` h-screen w-full flex flex-col overflow-hidden `}>
+      <ChatHeader />
+      <main
+        className={`
+         flex-1 overflow-hidden z-20  border-chat-border bg-chat-background 
+         transition-all mt-3.5 h-full border rounded-tl-xl duration-150 ease-snappy has-[.sidebar-check:checked]:mt-0 has-[.sidebar-check:checked]:h-screen has-[.sidebar-check:checked]:rounded-none
+        
+      `}
+      >
+        <input
+          className="hidden sidebar-check"
+          type="checkbox"
+          name="sidebar-check"
+        />
+        <div className=" h-full overflow-y-auto">{children}</div>
+        <div className="max-w-3xl relative mx-auto w-full">
+          <ChatInput />
+        </div>
+      </main>
+
+      <div className="pointer-events-auto fixed h-fit left-2 top-2 z-50 flex flex-row gap-0.5 p-1 inset-0 right-auto text-muted-foreground rounded-md backdrop-blur-sm transition-[background-color,width] delay-125 duration-125  bg-sidebar blur-fallback:bg-sidebar max-sm:delay-125 max-sm:duration-125 max-sm:w-[6.75rem] max-sm:bg-sidebar">
+        <SidebarTrigger />
+        <div
+          className={`transition-all flex flex-nowrap duration-150 ease-snappy gap-0.5 has-[.sidebar-check:not(:checked)]:-translate-x-[20px] has-[.sidebar-check:not(:checked)]:opacity-0 has-[.sidebar-check:not(:checked)]:w-0 has-[.sidebar-check:not(:checked)]:-z-50 has-[.sidebar-check:not(:checked)]:h-0 `}
+        >
+          <input
+            className="hidden sidebar-check"
+            type="checkbox"
+            name="sidebar-check"
+          />
+          <Button variant="ghost" size="icon">
+            <FiSearch />
+          </Button>
+          <Button variant="ghost" size="icon">
+            <FiPlus />
+          </Button>
+        </div>
+      </div>
+      <div
+        className={`fixed pointer-events-auto  right-2  top-2 z-50 flex flex-row p-1 items-center justify-center  rounded-md duration-150  transition-background ease-snappy   max-sm:w-[6.75rem]   gap-2  text-muted-foreground has-[.sidebar-check:checked]:bg-sidebar has-[.sidebar-check:checked]:backdrop-blur-sm has-[.sidebar-check:not(:checked)]:bg-transparent`}
+      >
+        <input
+          className="hidden sidebar-check"
+          type="checkbox"
+          name="sidebar-check"
+        />
+        <Button variant="ghost" size="icon">
+          <LuSettings2 />
+        </Button>
+        <ThemeToggle />
+      </div>
+    </div>
+  );
+}
+
+export default async function ChatLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const session = await auth();
+
+  return (
+    <>
+      <SidebarProvider>
+        <Sidebar className="!bg-transparent" collapsible="offcanvas">
+          <SidebarHeader>
+            <SidebarMenu className="space-y-2">
+              <SidebarMenuItem>
+                <div className="flex items-center justify-center h-8 mt-2 flex-1 *:!text-wordmark-color">
+                  <Link href="/">
+                    <SidebarLogo />
+                  </Link>
+                </div>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <Button className="w-full" variant="t3">
+                  New Chat
+                </Button>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <DevInput
+                  className="!w-full gap-3"
+                  placeholder="Search your threads..."
+                  variant="underline"
+                  icon={
+                    <FiSearch className="w-3.5 h-3.5 text-muted-foreground ml-1" />
+                  }
+                />
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarHeader>
+          <SidebarContent>
+            <SidebarGroup>
+              <SidebarGroupLabel className="gap-1">
+                <LuPin className="!w-3 !h-3" /> Pinned
+              </SidebarGroupLabel>
+              <SidebarMenu>
+                <SidebarMenuItem className="hover:bg-sidebar-accent overflow-hidden flex items-center relative px-0 group/link-item rounded-lg ">
+                  <Link className="block p-2 px-3 " href="/">
+                    Goodbye Message
+                  </Link>
+                  <div className="flex *:size-7 bg-sidebar-accent transition-all items-center gap-1 absolute group-hover/link-item:right-1 -right-[100px] ">
+                    <Button variant="ghost" size="icon">
+                      <LuPinOff />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="hover:!bg-destructive/50 hover:!text-destructive-foreground"
+                      size="icon"
+                    >
+                      <IoMdClose />
+                    </Button>
+                  </div>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroup>
+            <SidebarGroup>
+              <SidebarGroupLabel>Today</SidebarGroupLabel>
+              <SidebarMenu>
+                <SidebarMenuItem className="hover:bg-sidebar-accent overflow-hidden flex items-center relative px-0 group/link-item rounded-lg ">
+                  <Link className="block p-2 px-3 " href="/">
+                    Goodbye Message
+                  </Link>
+                  <div className="flex *:size-7 bg-sidebar-accent transition-all items-center gap-1 absolute group-hover/link-item:right-1 -right-[100px] ">
+                    <Button variant="ghost" size="icon">
+                      <LuPin />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="hover:!bg-destructive/50 hover:!text-destructive-foreground"
+                      size="icon"
+                    >
+                      <IoMdClose />
+                    </Button>
+                  </div>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroup>
+            <SidebarGroup>
+              <SidebarGroupLabel>Yesterday</SidebarGroupLabel>
+              <SidebarMenu>
+                <SidebarMenuItem className="hover:bg-sidebar-accent overflow-hidden flex items-center relative px-0 group/link-item rounded-lg ">
+                  <Link className="block p-2 px-3 " href="/">
+                    Goodbye Message
+                  </Link>
+                  <div className="flex *:size-7 bg-sidebar-accent transition-all items-center gap-1 absolute group-hover/link-item:right-1 -right-[100px] ">
+                    <Button variant="ghost" size="icon">
+                      <LuPin />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="hover:!bg-destructive/50 hover:!text-destructive-foreground"
+                      size="icon"
+                    >
+                      <IoMdClose />
+                    </Button>
+                  </div>
+                </SidebarMenuItem>
+                <SidebarMenuItem className="hover:bg-sidebar-accent overflow-hidden flex items-center relative px-0 group/link-item rounded-lg ">
+                  <Link className="block p-2 px-3 " href="/">
+                    Goodbye Message
+                  </Link>
+                  <div className="flex *:size-7 bg-sidebar-accent transition-all items-center gap-1 absolute group-hover/link-item:right-1 -right-[100px] ">
+                    <Button variant="ghost" size="icon">
+                      <LuPin />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="hover:!bg-destructive/50 hover:!text-destructive-foreground"
+                      size="icon"
+                    >
+                      <IoMdClose />
+                    </Button>
+                  </div>
+                </SidebarMenuItem>
+                <SidebarMenuItem className="hover:bg-sidebar-accent overflow-hidden flex items-center relative px-0 group/link-item rounded-lg ">
+                  <Link className="block p-2 px-3 " href="/">
+                    Goodbye Message
+                  </Link>
+                  <div className="flex *:size-7 bg-sidebar-accent transition-all items-center gap-1 absolute group-hover/link-item:right-1 -right-[100px] ">
+                    <Button variant="ghost" size="icon">
+                      <LuPin />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="hover:!bg-destructive/50 hover:!text-destructive-foreground"
+                      size="icon"
+                    >
+                      <IoMdClose />
+                    </Button>
+                  </div>
+                </SidebarMenuItem>
+                <SidebarMenuItem className="hover:bg-sidebar-accent overflow-hidden flex items-center relative px-0 group/link-item rounded-lg ">
+                  <Link
+                    className="p-2 px-3  truncate flex items-center gap-2 "
+                    href="/"
+                  >
+                    <BranchOffIcon />
+                    <p className="flex-1/2 truncate">
+                      Goodbye Messagedsdsdsdsd dsdsdsdsdsdsdsd
+                    </p>
+                  </Link>
+                  <div className="flex *:size-7 bg-sidebar-accent blur-fallback:bg-sidebar backdrop-blur-sm transition-all items-center gap-1 absolute group-hover/link-item:right-1 -right-[100px] ">
+                    <Button variant="ghost" size="icon">
+                      <LuPin />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="hover:!bg-destructive/50 hover:!text-destructive-foreground"
+                      size="icon"
+                    >
+                      <IoMdClose />
+                    </Button>
+                  </div>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroup>
+            <SidebarGroup>
+              <SidebarGroupLabel>Yesterday</SidebarGroupLabel>
+              <SidebarMenu>
+                <SidebarMenuItem className="hover:bg-sidebar-accent overflow-hidden flex items-center relative px-0 group/link-item rounded-lg ">
+                  <Link className="block p-2 px-3 " href="/">
+                    Goodbye Message
+                  </Link>
+                  <div className="flex *:size-7 bg-sidebar-accent transition-all items-center gap-1 absolute group-hover/link-item:right-1 -right-[100px] ">
+                    <Button variant="ghost" size="icon">
+                      <LuPin />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="hover:!bg-destructive/50 hover:!text-destructive-foreground"
+                      size="icon"
+                    >
+                      <IoMdClose />
+                    </Button>
+                  </div>
+                </SidebarMenuItem>
+                <SidebarMenuItem className="hover:bg-sidebar-accent overflow-hidden flex items-center relative px-0 group/link-item rounded-lg ">
+                  <Link className="block p-2 px-3 " href="/">
+                    Goodbye Message
+                  </Link>
+                  <div className="flex *:size-7 bg-sidebar-accent transition-all items-center gap-1 absolute group-hover/link-item:right-1 -right-[100px] ">
+                    <Button variant="ghost" size="icon">
+                      <LuPin />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="hover:!bg-destructive/50 hover:!text-destructive-foreground"
+                      size="icon"
+                    >
+                      <IoMdClose />
+                    </Button>
+                  </div>
+                </SidebarMenuItem>
+                <SidebarMenuItem className="hover:bg-sidebar-accent overflow-hidden flex items-center relative px-0 group/link-item rounded-lg ">
+                  <Link className="block p-2 px-3 " href="/">
+                    Goodbye Message
+                  </Link>
+                  <div className="flex *:size-7 bg-sidebar-accent transition-all items-center gap-1 absolute group-hover/link-item:right-1 -right-[100px] ">
+                    <Button variant="ghost" size="icon">
+                      <LuPin />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="hover:!bg-destructive/50 hover:!text-destructive-foreground"
+                      size="icon"
+                    >
+                      <IoMdClose />
+                    </Button>
+                  </div>
+                </SidebarMenuItem>
+                <SidebarMenuItem className="hover:bg-sidebar-accent overflow-hidden flex items-center relative px-0 group/link-item rounded-lg ">
+                  <Link
+                    className="p-2 px-3  truncate flex items-center gap-2 "
+                    href="/"
+                  >
+                    <BranchOffIcon />
+                    <p className="flex-1/2 truncate">
+                      Goodbye Messagedsdsdsdsd dsdsdsdsdsdsdsd
+                    </p>
+                  </Link>
+                  <div className="flex *:size-7 bg-sidebar-accent blur-fallback:bg-sidebar backdrop-blur-sm transition-all items-center gap-1 absolute group-hover/link-item:right-1 -right-[100px] ">
+                    <Button variant="ghost" size="icon">
+                      <LuPin />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="hover:!bg-destructive/50 hover:!text-destructive-foreground"
+                      size="icon"
+                    >
+                      <IoMdClose />
+                    </Button>
+                  </div>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroup>
+          </SidebarContent>
+          <SidebarFooter>
+            <SidebarMenu>
+              {session ? (
+                <SidebarMenuItem className="flex rounded-lg  p-2.5 mb-2 w-full hover:bg-sidebar-accent min-w-0 flex-row items-center gap-3">
+                  <img
+                    src={session.user?.image || ""}
+                    alt={session.user?.name || ""}
+                    className="h-8 w-8 bg-accent rounded-full ring-1 ring-muted-foreground/20"
+                  />
+                  <div className="flex min-w-0 flex-col text-foreground">
+                    <span className="truncate text-sm font-medium">
+                      {session.user?.name}
+                    </span>
+                    <span className="text-xs">Free</span>
+                  </div>
+                </SidebarMenuItem>
+              ) : (
+                <SidebarMenuItem className="p-1">
+                  <Link
+                    href="/auth"
+                    className="flex rounded-lg p-2.5 py-4 mb-1 w-full hover:bg-sidebar-accent min-w-0 flex-row items-center gap-4 text-[16px]"
+                  >
+                    <LuLogIn size={18} /> Login
+                  </Link>
+                </SidebarMenuItem>
+              )}
+            </SidebarMenu>
+          </SidebarFooter>
+          <SidebarRail />
+        </Sidebar>
+
+        <ChatLayoutContent>{children}</ChatLayoutContent>
+      </SidebarProvider>
+    </>
+  );
+}

@@ -5,8 +5,7 @@ import { MessageType } from "@/types/chat.type";
 const MessageSchema = new Schema<MessageType>(
   {
     threadId: {
-        type: Schema.Types.ObjectId,
-        ref: "Thread",
+        type:String,
         required: true
     },
     userQuery: {

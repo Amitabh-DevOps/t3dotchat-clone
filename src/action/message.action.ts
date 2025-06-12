@@ -17,7 +17,10 @@ export const getMessages = async ({ threadId }: { threadId: string }) => {
   try {
     await connectDB();
 
-    const thread = await Thread.findOne({ _id: threadId, userId: session.user.id });
+    const thread = await Thread.findOne({
+      threadId: threadId,
+      userId: session.user.id,
+    });
 
     if (!thread) {
       return {
@@ -49,14 +52,14 @@ export const getMessages = async ({ threadId }: { threadId: string }) => {
   }
 };
 
-export const createMessage = async ({ 
-  threadId, 
-  userQuery, 
-  aiResponse 
-}: { 
-  threadId: string; 
-  userQuery: string; 
-  aiResponse: { content: string; model: string }[] 
+export const createMessage = async ({
+  threadId,
+  userQuery,
+  aiResponse,
+}: {
+  threadId: string;
+  userQuery: string;
+  aiResponse: { content: string; model: string }[];
 }) => {
   const session = await auth();
 
@@ -66,12 +69,12 @@ export const createMessage = async ({
       error: "Unauthorized",
     };
   }
-
   try {
     await connectDB();
-
-    // Verify that the thread exists and belongs to the user
-    const thread = await Thread.findOne({ _id: threadId, userId: session.user.id });
+    const thread = await Thread.findOne({
+      threadId: threadId,
+      userId: session.user.id,
+    });
 
     if (!thread) {
       return {
@@ -79,14 +82,13 @@ export const createMessage = async ({
         error: "Thread not found",
       };
     }
-
-    // Create the message
+    console.log("me who who who");
     const message = await Message.create({
       threadId,
       userQuery,
       aiResponse,
     });
-
+    console.log(message, "save message");
     return {
       data: serializeData(message),
       error: null,
@@ -97,4 +99,4 @@ export const createMessage = async ({
       error: error.message || "Failed to create message",
     };
   }
-}; 
+};

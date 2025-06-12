@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const connectDB = async (): Promise<void> => {
   try {
-    const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/ai_interviewer';
+    const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/t3dotchat';
     
     await mongoose.connect(mongoUri);
     
@@ -10,7 +10,6 @@ const connectDB = async (): Promise<void> => {
 
   } catch (error) {
     console.error('❌ Error connecting to MongoDB:', error);
-    process.exit(1);
   }
 };
 
