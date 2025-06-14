@@ -9,5 +9,6 @@ export interface MessageType extends Document {
         content: string;
         model: string;
     }
-  ]
+  ];
+  createdAt: Date;
 }

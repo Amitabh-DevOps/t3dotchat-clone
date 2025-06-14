@@ -4,6 +4,7 @@ import Message from "@/models/message.model";
 import { serializeData } from "@/lib/constant";
 import Thread from "@/models/thread.model";
 import connectDB from "@/config/db";
+import { MessageType } from "@/types/message.type";
 
 export const getMessages = async ({ threadId }: { threadId: string }) => {
   const session = await auth();
@@ -14,9 +15,11 @@ export const getMessages = async ({ threadId }: { threadId: string }) => {
       error: "Unauthorized",
     };
   }
+
   try {
     await connectDB();
 
+    // Find the current thread
     const thread = await Thread.findOne({
       threadId: threadId,
       userId: session.user.id,
@@ -29,11 +32,40 @@ export const getMessages = async ({ threadId }: { threadId: string }) => {
       };
     }
 
-    const messages = await Message.find({ threadId: threadId }).sort({
-      createdAt: 1,
-    });
+    let allMessages: MessageType[] = [];
 
-    if (!messages || messages.length === 0) {
+    if (thread.parentChatId) {
+      const parentMessage = await Message.findOne({
+        _id: thread.parentChatId,
+        userId: session.user.id,
+      });
+
+      if (parentMessage) {
+        const parentThreadId = parentMessage.threadId;
+        
+        const parentMessages = await Message.find({ 
+          threadId: parentThreadId,
+          createdAt: { $lte: parentMessage.createdAt }
+        }).sort({ createdAt: 1 });
+
+        if (parentMessages && parentMessages.length > 0) {
+          allMessages = [...parentMessages];
+        }
+      }
+    }
+
+    const currentMessages = await Message.find({ 
+      threadId: threadId 
+    }).sort({ createdAt: 1 });
+
+    if (currentMessages && currentMessages.length > 0) {
+      allMessages = [...allMessages, ...currentMessages];
+    }
+
+    // Sort all messages by creation time to maintain chronological order
+    allMessages.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+
+    if (allMessages.length === 0) {
       return {
         data: null,
         error: "No messages found",
@@ -41,13 +73,13 @@ export const getMessages = async ({ threadId }: { threadId: string }) => {
     }
 
     return {
-      data: serializeData(messages),
+      data: serializeData(allMessages),
       error: null,
     };
   } catch (error: any) {
     return {
       data: null,
-      error: error,
+      error: error.message || "An error occurred while fetching messages",
     };
   }
 };
