@@ -57,7 +57,7 @@ const HomeChat = () => {
               {actionButtons.map((tab, index) => (
                 <TabsTrigger
                   className="
-                justify-center  whitespace-nowrap text-sm transition-colors
+                justify-center  whitespace-nowrap text-sm transition-[opacity, translate-x]
                 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring
                 disabled:cursor-not-allowed disabled:opacity-50
                 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0

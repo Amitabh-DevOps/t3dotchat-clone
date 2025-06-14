@@ -29,7 +29,7 @@ const DevInput = forwardRef<HTMLInputElement, InputProps>(
     },
     ref
   ) => {
-    const commonStyle = `w-full flex border border-input transition-all ring-input/50 items-center ${
+    const commonStyle = `w-full flex border border-input transition-[opacity, translate-x] ring-input/50 items-center ${
       icon && " gap-2 "
     },
     ${reverseIcon && "flex-row-reverse"}`;

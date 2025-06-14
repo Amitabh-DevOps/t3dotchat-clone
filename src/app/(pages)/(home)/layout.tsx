@@ -31,6 +31,7 @@ import Link from "next/link";
 import BranchOffIcon from "../../../../public/icons/branch-off";
 import { auth } from "@/auth";
 import ChatInput from "@/components/chat-cmp/chat-input";
+import ThreadSearch from "@/components/chat-cmp/thread-search";
 
 function ChatLayoutContent({ children }: { children: React.ReactNode }) {
   return (
@@ -39,7 +40,7 @@ function ChatLayoutContent({ children }: { children: React.ReactNode }) {
       <main
         className={`
          flex-1 overflow-hidden z-20  border-chat-border bg-chat-background 
-         transition-all mt-3.5 h-full border rounded-tl-xl duration-150 ease-snappy has-[.sidebar-check:checked]:mt-0 has-[.sidebar-check:checked]:h-screen has-[.sidebar-check:checked]:rounded-none
+         transition-[margin-top,height] mt-3.5 h-full border rounded-tl-xl duration-100 ease-snappy has-[.sidebar-check:checked]:mt-0 has-[.sidebar-check:checked]:h-screen has-[.sidebar-check:checked]:rounded-none
         
       `}
       >
@@ -54,26 +55,26 @@ function ChatLayoutContent({ children }: { children: React.ReactNode }) {
         </div>
       </main>
 
-      <div className="pointer-events-auto fixed h-fit left-2 top-2 z-50 flex flex-row gap-0.5 p-1 inset-0 right-auto text-muted-foreground rounded-md backdrop-blur-sm transition-[background-color,width] delay-125 duration-125  bg-sidebar blur-fallback:bg-sidebar max-sm:delay-125 max-sm:duration-125 max-sm:w-[6.75rem] max-sm:bg-sidebar">
+      <div className="pointer-events-auto fixed h-fit left-2 top-2 z-50 flex flex-row gap-0.5 p-1 inset-0 right-auto text-muted-foreground rounded-md backdrop-blur-sm transition-[width] delay-125 duration-100  bg-sidebar blur-fallback:bg-sidebar max-sm:delay-125 max-sm:duration-100 max-sm:w-[6.75rem] max-sm:bg-sidebar">
         <SidebarTrigger />
         <div
-          className={`transition-all flex flex-nowrap duration-150 ease-snappy gap-0.5 has-[.sidebar-check:not(:checked)]:-translate-x-[20px] has-[.sidebar-check:not(:checked)]:opacity-0 has-[.sidebar-check:not(:checked)]:w-0 has-[.sidebar-check:not(:checked)]:-z-50 has-[.sidebar-check:not(:checked)]:h-0 `}
+          className={`transition-[opacity, translate-x] flex flex-nowrap duration-200 ease-snappy gap-0.5 has-[.sidebar-check:not(:checked)]:-translate-x-[20px] has-[.sidebar-check:not(:checked)]:opacity-0 has-[.sidebar-check:not(:checked)]:w-0 has-[.sidebar-check:not(:checked)]:-z-50 has-[.sidebar-check:not(:checked)]:h-0 `}
         >
           <input
             className="hidden sidebar-check"
             type="checkbox"
             name="sidebar-check"
           />
-          <Button variant="ghost" size="icon">
-            <FiSearch />
-          </Button>
-          <Button variant="ghost" size="icon">
-            <FiPlus />
+          <ThreadSearch />
+          <Button variant="ghost" className="p-0" size="icon">
+            <Link href="/" className="w-full h-full grid place-items-center">
+              <FiPlus />
+            </Link>
           </Button>
         </div>
       </div>
       <div
-        className={`fixed pointer-events-auto  right-2  top-2 z-50 flex flex-row p-1 items-center justify-center  rounded-md duration-150  transition-background ease-snappy   max-sm:w-[6.75rem]   gap-2  text-muted-foreground has-[.sidebar-check:checked]:bg-sidebar has-[.sidebar-check:checked]:backdrop-blur-sm has-[.sidebar-check:not(:checked)]:bg-transparent`}
+        className={`fixed pointer-events-auto  right-2  top-2 z-50 flex flex-row p-1 items-center justify-center  rounded-md duration-100   transition-[translate-x] ease-snappy  max-sm:w-[6.75rem]   gap-2  text-muted-foreground has-[.sidebar-check:checked]:bg-sidebar has-[.sidebar-check:checked]:backdrop-blur-sm has-[.sidebar-check:not(:checked)]:bg-transparent`}
       >
         <input
           className="hidden sidebar-check"
@@ -110,8 +111,13 @@ export default async function ChatLayout({
                 </div>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <Button className="w-full" variant="t3">
-                  New Chat
+                <Button className="w-full p-0" variant="t3">
+                  <Link
+                    href="/"
+                    className="w-full h-full grid place-items-center"
+                  >
+                    New Chat
+                  </Link>
                 </Button>
               </SidebarMenuItem>
               <SidebarMenuItem>
@@ -136,7 +142,7 @@ export default async function ChatLayout({
                   <Link className="block p-2 px-3 " href="/">
                     Goodbye Message
                   </Link>
-                  <div className="flex *:size-7 bg-sidebar-accent transition-all items-center gap-1 absolute group-hover/link-item:right-1 -right-[100px] ">
+                  <div className="flex *:size-7 bg-sidebar-accent transition-[opacity, translate-x] items-center gap-1 absolute group-hover/link-item:right-1 -right-[100px] ">
                     <Button variant="ghost" size="icon">
                       <LuPinOff />
                     </Button>
@@ -158,7 +164,7 @@ export default async function ChatLayout({
                   <Link className="block p-2 px-3 " href="/">
                     Goodbye Message
                   </Link>
-                  <div className="flex *:size-7 bg-sidebar-accent transition-all items-center gap-1 absolute group-hover/link-item:right-1 -right-[100px] ">
+                  <div className="flex *:size-7 bg-sidebar-accent transition-[opacity, translate-x] items-center gap-1 absolute group-hover/link-item:right-1 -right-[100px] ">
                     <Button variant="ghost" size="icon">
                       <LuPin />
                     </Button>
@@ -180,7 +186,7 @@ export default async function ChatLayout({
                   <Link className="block p-2 px-3 " href="/">
                     Goodbye Message
                   </Link>
-                  <div className="flex *:size-7 bg-sidebar-accent transition-all items-center gap-1 absolute group-hover/link-item:right-1 -right-[100px] ">
+                  <div className="flex *:size-7 bg-sidebar-accent transition-[opacity, translate-x] items-center gap-1 absolute group-hover/link-item:right-1 -right-[100px] ">
                     <Button variant="ghost" size="icon">
                       <LuPin />
                     </Button>
@@ -197,7 +203,7 @@ export default async function ChatLayout({
                   <Link className="block p-2 px-3 " href="/">
                     Goodbye Message
                   </Link>
-                  <div className="flex *:size-7 bg-sidebar-accent transition-all items-center gap-1 absolute group-hover/link-item:right-1 -right-[100px] ">
+                  <div className="flex *:size-7 bg-sidebar-accent transition-[opacity, translate-x] items-center gap-1 absolute group-hover/link-item:right-1 -right-[100px] ">
                     <Button variant="ghost" size="icon">
                       <LuPin />
                     </Button>
@@ -214,7 +220,7 @@ export default async function ChatLayout({
                   <Link className="block p-2 px-3 " href="/">
                     Goodbye Message
                   </Link>
-                  <div className="flex *:size-7 bg-sidebar-accent transition-all items-center gap-1 absolute group-hover/link-item:right-1 -right-[100px] ">
+                  <div className="flex *:size-7 bg-sidebar-accent transition-[opacity, translate-x] items-center gap-1 absolute group-hover/link-item:right-1 -right-[100px] ">
                     <Button variant="ghost" size="icon">
                       <LuPin />
                     </Button>
@@ -237,7 +243,7 @@ export default async function ChatLayout({
                       Goodbye Messagedsdsdsdsd dsdsdsdsdsdsdsd
                     </p>
                   </Link>
-                  <div className="flex *:size-7 bg-sidebar-accent blur-fallback:bg-sidebar backdrop-blur-sm transition-all items-center gap-1 absolute group-hover/link-item:right-1 -right-[100px] ">
+                  <div className="flex *:size-7 bg-sidebar-accent blur-fallback:bg-sidebar backdrop-blur-sm transition-[opacity, translate-x] items-center gap-1 absolute group-hover/link-item:right-1 -right-[100px] ">
                     <Button variant="ghost" size="icon">
                       <LuPin />
                     </Button>
@@ -259,7 +265,7 @@ export default async function ChatLayout({
                   <Link className="block p-2 px-3 " href="/">
                     Goodbye Message
                   </Link>
-                  <div className="flex *:size-7 bg-sidebar-accent transition-all items-center gap-1 absolute group-hover/link-item:right-1 -right-[100px] ">
+                  <div className="flex *:size-7 bg-sidebar-accent transition-[opacity, translate-x] items-center gap-1 absolute group-hover/link-item:right-1 -right-[100px] ">
                     <Button variant="ghost" size="icon">
                       <LuPin />
                     </Button>
@@ -276,7 +282,7 @@ export default async function ChatLayout({
                   <Link className="block p-2 px-3 " href="/">
                     Goodbye Message
                   </Link>
-                  <div className="flex *:size-7 bg-sidebar-accent transition-all items-center gap-1 absolute group-hover/link-item:right-1 -right-[100px] ">
+                  <div className="flex *:size-7 bg-sidebar-accent transition-[opacity, translate-x] items-center gap-1 absolute group-hover/link-item:right-1 -right-[100px] ">
                     <Button variant="ghost" size="icon">
                       <LuPin />
                     </Button>
@@ -293,7 +299,7 @@ export default async function ChatLayout({
                   <Link className="block p-2 px-3 " href="/">
                     Goodbye Message
                   </Link>
-                  <div className="flex *:size-7 bg-sidebar-accent transition-all items-center gap-1 absolute group-hover/link-item:right-1 -right-[100px] ">
+                  <div className="flex *:size-7 bg-sidebar-accent transition-[opacity, translate-x] items-center gap-1 absolute group-hover/link-item:right-1 -right-[100px] ">
                     <Button variant="ghost" size="icon">
                       <LuPin />
                     </Button>
@@ -316,7 +322,7 @@ export default async function ChatLayout({
                       Goodbye Messagedsdsdsdsd dsdsdsdsdsdsdsd
                     </p>
                   </Link>
-                  <div className="flex *:size-7 bg-sidebar-accent blur-fallback:bg-sidebar backdrop-blur-sm transition-all items-center gap-1 absolute group-hover/link-item:right-1 -right-[100px] ">
+                  <div className="flex *:size-7 bg-sidebar-accent blur-fallback:bg-sidebar backdrop-blur-sm transition-[opacity, translate-x] items-center gap-1 absolute group-hover/link-item:right-1 -right-[100px] ">
                     <Button variant="ghost" size="icon">
                       <LuPin />
                     </Button>

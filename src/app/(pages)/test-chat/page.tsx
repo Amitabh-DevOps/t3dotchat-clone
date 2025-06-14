@@ -13,7 +13,7 @@ export default function SimpleStreamingChat() {
     
     if (!query.trim() || isLoading) return;
 
-    await sendMessage();
+    await sendMessage({chatid:"da50400a-d5e6-413b-9e6d-ced59fa9c7f1"});
     setQuery('');
   };
 
