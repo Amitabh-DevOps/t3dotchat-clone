@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -47,6 +48,49 @@
   --chat-overlay: hsla(309, 63%, 92%, var(--blur-fallback, 0.72));
   --wordmark-color: #ca0277;
   --sidebar: hsl(0 0% 98%);
+
+  --shiki-foreground: rgb(108, 76, 188);
+  --shiki-background: rgb(103, 60, 139);
+  --shiki-token-constant: rgb(210, 98, 108);
+  --shiki-token-string: rgb(72, 126, 112);
+  --shiki-token-comment: rgb(72, 126, 112);
+  --shiki-token-keyword: rgb(197, 20, 120);
+  --shiki-token-parameter: rgb(103, 60, Classics, History, Culture139);
+  --shiki-token-function: rgb(108, 76, 188);
+  --shiki-token-string-expression: rgb(72, 126, 112);
+  --shiki-token-link: rgb(210, 98, 108);
+  --shiki-ansi-black: rgb(103, 60, 139);
+  --shiki-ansi-black-dim: rgba(103, 60, 139, 0.5);
+  --shiki-ansi-red: rgb(210, 98, 108);
+  --shiki-ansi-red-dim: rgba(210, 98, 108, 0.5);
+  --shiki-ansi-green: rgb(72, 126, 112);
+  --shiki-ansi-green-dim: rgba(72, 126, 112, 0.5);
+  --shiki-ansi-yellow: rgb(210, 98, 108);
+  --shiki-ansi-yellow-dim: rgba(210, 98, 108, 0.5);
+  --shiki-ansi-blue: rgb(108, 76, 188);
+  --shiki-ansi-blue-dim: rgba(108, 76, 188, 0.5);
+  --shiki-ansi-magenta: rgb(197, 20, 120);
+  --shiki-ansi-magenta-dim: rgba(197, 20, 120, 0.5);
+  --shiki-ansi-cyan: rgb(72, 126, 112);
+  --shiki-ansi-cyan-dim: rgba(72, 126, 112, 0.5);
+  --shiki-ansi-white: rgb(210, 98, 108);
+  --shiki-ansi-white-dim: rgba(210, 98, 108, 0.5);
+  --shiki-ansi-bright-black: rgb(103, 60, 139);
+  --shiki-ansi-bright-black-dim: rgba(103, 60, 139, 0.5);
+  --shiki-ansi-bright-red: rgb(210, 98, 108);
+  --shiki-ansi-bright-red-dim: rgba(210, 98, 108, 0.5);
+  --shiki-ansi-bright-green: rgb(72, 126, 112);
+  --shiki-ansi-bright-green-dim: rgba(72, 126, 112, 0.5);
+  --shiki-ansi-bright-yellow: rgb(210, 98, 108);
+  --shiki-ansi-bright-yellow-dim: rgba(210, 98, 108, 0.5);
+  --shiki-ansi-bright-blue: rgb(108, 76, 188);
+  --shiki-ansi-bright-blue-dim: rgba(108, 76, 188, 0.5);
+  --shiki-ansi-bright-magenta: rgb(197, 20, 120);
+  --shiki-ansi-bright-magenta-dim: rgba(197, 20, 120, 0.5);
+  --shiki-ansi-bright-cyan: rgb(72, 126, 112);
+  --shiki-ansi-bright-cyan-dim: rgba(72, 126, 112, 0.5);
+  --shiki-ansi-bright-white: rgb(210, 98, 108);
+  --shiki-ansi-bright-white-dim: rgba(210, 98, 108, 0.5);
 }
 
 .boring-dark,
@@ -92,6 +136,49 @@
   --chat-input-background: hsla(270, 10%, 20%, var(--blur-fallback, 0.4));
   --chat-overlay: hsla(270, 12%, 16%, var(--blur-fallback, 0.71));
   --wordmark-color: #e3bad1;
+
+  --shiki-foreground: rgb(210, 199, 225);
+  --shiki-background: rgb(29, 25, 33);
+  --shiki-token-constant: rgb(255, 188, 158);
+  --shiki-token-string: rgb(150, 208, 187);
+  --shiki-token-comment: rgb(122, 100, 131);
+  --shiki-token-keyword: rgb(248, 136, 181);
+  --shiki-token-parameter: rgb(150, 208, 187);
+  --shiki-token-function: rgb(186, 164, 237);
+  --shiki-token-string-expression: rgb(150, 208, 187);
+  --shiki-token-link: rgb(248, 136, 181);
+  --shiki-ansi-black: rgb(122, 100, 131);
+  --shiki-ansi-black-dim: rgba(122, 100, 131, 0.5);
+  --shiki-ansi-red: rgb(248, 136, 181);
+  --shiki-ansi-red-dim: rgba(248, 136, 181, 0.5);
+  --shiki-ansi-green: rgb(150, 208, 187);
+  --shiki-ansi-green-dim: rgba(150, 208, 187, 0.5);
+  --shiki-ansi-yellow: rgb(255, 188, 158);
+  --shiki-ansi-yellow-dim: rgba(255, 188, 158, 0.5);
+  --shiki-ansi-blue: rgb(186, 164, 237);
+  --shiki-ansi-blue-dim: rgba(186, 164, 237, 0.5);
+  --shiki-ansi-magenta: rgb(248, 136, 181);
+  --shiki-ansi-magenta-dim: rgba(248, 136, 181, 0.5);
+  --shiki-ansi-cyan: rgb(150, 208, 187);
+  --shiki-ansi-cyan-dim: rgba(150, 208, 187, 0.5);
+  --shiki-ansi-white: rgb(210, 199, 225);
+  --shiki-ansi-white-dim: rgba(210, 199, 225, 0.5);
+  --shiki-ansi-bright-black: rgb(122, 100, 131);
+  --shiki-ansi-bright-black-dim: rgba(122, 100, 131, 0.5);
+  --shiki-ansi-bright-red: rgb(248, 136, 181);
+  --shiki-ansi-bright-red-dim: rgba(248, 136, 181, 0.5);
+  --shiki-ansi-bright-green: rgb(150, 208, 187);
+  --shiki-ansi-bright-green-dim: rgba(150, 208, 187, 0.5);
+  --shiki-ansi-bright-yellow: rgb(255, 188, 158);
+  --shiki-ansi-bright-yellow-dim: rgba(255, 188, 158, 0.5);
+  --shiki-ansi-bright-blue: rgb(186, 164, 237);
+  --shiki-ansi-bright-blue-dim: rgba(186, 164, 237, 0.5);
+  --shiki-ansi-bright-magenta: rgb(248, 136, 181);
+  --shiki-ansi-bright-magenta-dim: rgba(248, 136, 181, 0.5);
+  --shiki-ansi-bright-cyan: rgb(150, 208, 187);
+  --shiki-ansi-bright-cyan-dim: rgba(150, 208, 187, 0.5);
+  --shiki-ansi-bright-white: rgb(210, 199, 225);
+  --shiki-ansi-bright-white-dim: rgba(210, 199, 225, 0.5);
 }
 
 .boring-light {
@@ -216,9 +303,6 @@
   --color-wordmark-color: var(--wordmark-color);
   --font-proxima-vara: var(--font-proxima-vara);
   --color-sidebar: hsl(var(--background));
-}
-
-@layer base {
 }
 
 :host,
@@ -420,5 +504,46 @@ body {
 }
 
 #chat-input {
-  field-sizing: content; 
+  field-sizing: content;
+}
+
+.prose-pink {
+  color: var(--color-foreground);
+  strong {
+    color: var(--color-foreground);
+  }
+  :not(pre) > code {
+    font-family: var(--font-berkeley-mono);
+    font-feature-settings: normal;
+    font-variation-settings: normal;
+    color: var(--color-foreground);
+    background-color: hsl(var(--secondary) / 0.5);
+    border-radius: calc(var(--radius) - 2px);
+    padding: 0.25em 0.5em;
+  }
+}
+
+@layer base {
+}
+
+.mark-response pre {
+  background-color: var(--color-background);
+  padding: 1rem;
+  font-size: 0.9em;
+  code,
+  kbd,
+  pre,
+  samp {
+    font-family: var(--font-berkeley-mono);
+    font-feature-settings: normal;
+    font-variation-settings: normal;
+    color: var(--color-foreground);
+  }
+  code {
+    background-color: transparent !important;
+    padding: 0 !important;
+  }
+}
+* {
+  white-space-collapse: unset !important;
 }

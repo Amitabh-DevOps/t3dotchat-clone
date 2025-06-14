@@ -1,7 +1,7 @@
 // components/ChatInput.tsx
 "use client";
 
-import React, { useCallback, KeyboardEvent, useEffect } from "react";
+import React, { useCallback, KeyboardEvent, useEffect, useState } from "react";
 import { ArrowUp, ChevronDown, Globe, Paperclip } from "lucide-react";
 import { Button } from "../ui/button";
 import { useStore } from "zustand";
@@ -11,6 +11,7 @@ import { createThread } from "@/action/thread.action";
 import { useRouter } from "next/navigation";
 import { useParams } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
+import { useStreamResponse } from "@/hooks/use-response-stream";
 
 interface ChatInputProps {
   placeholder?: string;
@@ -25,19 +26,18 @@ function ChatInput({
   isSearchEnabled = false,
   isFileAttachEnabled = false,
 }: ChatInputProps) {
-  const { query, setQuery, setResponse } = useStore(chatStore);
-  const { currentResponse, isStreaming, error, mutate, isPending } =
-    useChatStream();
   const params = useParams();
   const router = useRouter();
-  useEffect(() => {
-    if (currentResponse) {
-      setResponse(currentResponse);
-    }
-  }, [currentResponse, setResponse]);
+  const { isLoading, error, sendMessage, clearMessages } = useStreamResponse();
+  const [input, setInput] = useState("");
+  const { setQuery } = chatStore();
+
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
+      if (!input.trim() || isLoading) return;
+      setQuery(input.trim());
+      setInput("");
       handleSubmit();
     }
   };
@@ -49,24 +49,30 @@ function ChatInput({
 
   // Handle form submission
   const handleSubmit = useCallback(async () => {
-    if (!query || isPending) return;
     const generatedId = generateUUID();
     if (!params.chatid) {
-      await createThread({title: "New Thread", threadId:generatedId})
+      await createThread({ title: "New Thread", threadId: generatedId });
       router.push(`/chat/${generatedId}`);
     }
-    mutate({ query , chatid: params.chatid as string || generatedId });
-    setQuery(""); // Clear input after submission
-  }, [query, isPending, mutate, setQuery]);
+    await sendMessage({ chatid: (params.chatid as string) || generatedId });
+  }, [
+    isLoading,
+    sendMessage,
+    params.chatid,
+    generateUUID,
+    createThread,
+    router,
+    input,
+  ]);
 
-  // Handle form submit event
-  const handleFormSubmit = useCallback(
-    (e: React.FormEvent<HTMLFormElement>) => {
-      e.preventDefault();
-      handleSubmit();
-    },
-    [handleSubmit]
-  );
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim() || isLoading) return;
+    setQuery(input.trim());
+    setInput("");
+    handleSubmit();
+  };
+
 
   return (
     <div className="absolute !bottom-0 h-fit inset-x-0 w-full">
@@ -84,13 +90,13 @@ function ChatInput({
               <textarea
                 placeholder={placeholder}
                 autoFocus
-                value={query}
+                value={input}
                 className="w-full max-h-64 min-h-[48px] resize-none bg-transparent text-base leading-6 text-foreground outline-none placeholder:text-secondary-foreground/60 disabled:opacity-50 transition-opacity"
                 aria-label="Message input"
                 aria-describedby="chat-input-description"
                 autoComplete="off"
                 onKeyDown={handleKeyDown}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={(e) => setInput(e.target.value)}
               />
               <div id="chat-input-description" className="sr-only">
                 Press Enter to send, Shift + Enter for new line
@@ -106,7 +112,7 @@ function ChatInput({
                   variant="t3"
                   type="submit"
                   size="icon"
-                  disabled={isPending || !query.trim()}
+                  disabled={isLoading || !input.trim()}
                   className="transition-all duration-200"
                 >
                   <ArrowUp className="!size-5" />
@@ -121,7 +127,7 @@ function ChatInput({
                     type="button"
                     aria-haspopup="menu"
                     aria-expanded="false"
-                    disabled={isPending}
+                    disabled={isLoading}
                   >
                     <div className="text-left text-sm font-medium">
                       {modelName}
@@ -138,7 +144,7 @@ function ChatInput({
                         ? "Web search"
                         : "Web search not available on free plan"
                     }
-                    disabled={!isSearchEnabled || isPending}
+                    disabled={!isSearchEnabled || isLoading}
                   >
                     <Globe className="h-4 w-4" />
                     <span className="max-sm:hidden">Search</span>
@@ -153,7 +159,7 @@ function ChatInput({
                         ? "Attach file"
                         : "Attaching files is a subscriber-only feature"
                     }
-                    disabled={!isFileAttachEnabled || isPending}
+                    disabled={!isFileAttachEnabled || isLoading}
                   >
                     <Paperclip className="size-4" />
                   </button>

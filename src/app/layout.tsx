@@ -10,6 +10,12 @@ const proximaVara = localFont({
   display: "swap",
 });
 
+const berkeleyMono = localFont({
+  src: "../assets/fonts/berkeley_mono.woff2",
+  variable: "--font-berkeley-mono",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "T3.Chat Super Clone",
   description: "T3.Chat Super Clone",
@@ -23,7 +29,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${proximaVara.variable} selection:text-white selection:bg-primary font-proxima-vara antialiased min-h-screen`}
+        className={`${proximaVara.variable} ${berkeleyMono.variable} selection:text-white selection:bg-primary font-proxima-vara antialiased min-h-screen`}
       >
         <ThemeProvider attribute="class"><QueryProvider> {children}</QueryProvider></ThemeProvider>
       </body>
