@@ -1,6 +1,6 @@
 'use server';
 import mongoose, { Schema } from "mongoose";
-import { MessageType } from "@/types/chat.type";
+import { MessageType } from "@/types/message.type";
 
 const MessageSchema = new Schema<MessageType>(
   {
@@ -8,10 +8,21 @@ const MessageSchema = new Schema<MessageType>(
         type:String,
         required: true
     },
+    userId: {
+        type: String,
+        required: true
+    },
     userQuery: {
         type: String,
         required: true,
         trim: true
+    },
+    attachment: {
+        type: String,
+    },
+    isSearch: {
+        type: Boolean,
+        default: false
     },
     aiResponse: [
         {
