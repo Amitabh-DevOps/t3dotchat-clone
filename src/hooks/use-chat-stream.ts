@@ -76,8 +76,6 @@ export function useChatStream() {
     setError,
   } = useStreamStore();
   const queryClient = useQueryClient();
-  const { query, setQuery, setResponse } = chatStore();
-
   const mutation = useMutation<
     StreamResponse,
     Error,
@@ -89,20 +87,17 @@ export function useChatStream() {
         setCurrentResponse(fullResponse);
       }),
     onMutate: () => {
-      setCurrentResponse("");
       setIsStreaming(true);
       setError(null);
     },
     onSuccess: async (e, { query, chatid }) => {
       setIsStreaming(false);
-      setCurrentResponse("");
-      setResponse("");
       await createMessage({
         threadId: chatid,
         userQuery: query,
         aiResponse: [{ content: e.fullResponse, model: "Gemini 2.5 Flash" }],
       });
-      queryClient.invalidateQueries({ queryKey: ["thread-messages"] });
+      // queryClient.invalidateQueries({ queryKey: ["thread-messages"] });
     },
     onError: (error) => {
       setIsStreaming(false);

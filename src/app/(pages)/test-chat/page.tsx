@@ -1,88 +1,20 @@
 // components/SimpleStreamingChat.tsx
 'use client';
 
-import { useState } from 'react';
-
-interface Message {
-  role: 'user' | 'assistant';
-  content: string;
-}
+import { useStreamResponse } from '@/hooks/use-response-stream';
+import chatStore from '@/stores/chat.store'; // Adjust path as needed
 
 export default function SimpleStreamingChat() {
-  const [input, setInput] = useState('');
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [currentResponse, setCurrentResponse] = useState('');
+  const { query, setQuery, response, messages } = chatStore();
+  const { isLoading, error, sendMessage, clearMessages } = useStreamResponse();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!input.trim() || isLoading) return;
+    if (!query.trim() || isLoading) return;
 
-    const userMessage: Message = { role: 'user', content: input.trim() };
-    const updatedMessages = [...messages, userMessage];
-    
-    setMessages(updatedMessages);
-    setInput('');
-    setIsLoading(true);
-    setCurrentResponse('');
-    setError(null);
-
-    try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          messages: updatedMessages 
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
-
-      if (!reader) {
-        throw new Error('Response body is not readable');
-      }
-
-      let assistantResponse = '';
-
-      while (true) {
-        const { done, value } = await reader.read();
-        
-        if (done) break;
-
-        const chunk = decoder.decode(value, { stream: true });
-        assistantResponse += chunk;
-        setCurrentResponse(assistantResponse);
-      }
-
-      // Add the complete response to messages
-      const assistantMessage: Message = { 
-        role: 'assistant', 
-        content: assistantResponse 
-      };
-      setMessages(prev => [...prev, assistantMessage]);
-      setCurrentResponse('');
-
-    } catch (err) {
-      console.error('Streaming error:', err);
-      setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const clearMessages = () => {
-    setMessages([]);
-    setCurrentResponse('');
-    setError(null);
+    await sendMessage();
+    setQuery('');
   };
 
   return (
@@ -100,30 +32,39 @@ export default function SimpleStreamingChat() {
       {/* Messages Container */}
       <div className="flex-1 overflow-y-auto mb-4 space-y-4 bg-gray-50 p-4 rounded-lg">
         {messages.map((message, index) => (
-          <div
-            key={index}
-            className={`p-3 rounded-lg max-w-[80%] ${
-              message.role === 'user'
-                ? 'bg-blue-500 text-white ml-auto'
-                : 'bg-white text-gray-800 border'
-            }`}
-          >
-            <div className="text-sm font-semibold mb-1 capitalize">
-              {message.role}
+          <div key={index} className="space-y-3">
+            {/* User Query */}
+            <div className="p-3 rounded-lg max-w-[80%] bg-blue-500 text-white ml-auto">
+              <div className="text-sm font-semibold mb-1">User</div>
+              <p>{message.userQuery}</p>
             </div>
-            <div className="whitespace-pre-wrap">{message.content}</div>
+            
+            {/* AI Response */}
+            <div className="p-3 rounded-lg max-w-[80%] bg-white text-gray-800 border">
+              <div className="text-sm font-semibold mb-1">Assistant</div>
+              <p>{message.aiResponse[0].content}</p>
+            </div>
           </div>
         ))}
         
         {/* Current streaming response */}
-        {(currentResponse || isLoading) && (
-          <div className="p-3 rounded-lg max-w-[80%] bg-white text-gray-800 border">
-            <div className="text-sm font-semibold mb-1">Assistant</div>
-            <div className="whitespace-pre-wrap">
-              {currentResponse}
-              {isLoading && (
-                <span className="animate-pulse bg-gray-400 inline-block w-2 h-5 ml-1"></span>
-              )}
+        {(response || isLoading) && (
+          <div className="space-y-3">
+            {/* Current user query */}
+            <div className="p-3 rounded-lg max-w-[80%] bg-blue-500 text-white ml-auto">
+              <div className="text-sm font-semibold mb-1">User</div>
+              <p>{query}</p>
+            </div>
+            
+            {/* Streaming AI response */}
+            <div className="p-3 rounded-lg max-w-[80%] bg-white text-gray-800 border">
+              <div className="text-sm font-semibold mb-1">Assistant</div>
+              <div className="whitespace-pre-wrap">
+                {response}
+                {isLoading && (
+                  <span className="animate-pulse bg-gray-400 inline-block w-2 h-5 ml-1"></span>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -143,17 +84,16 @@ export default function SimpleStreamingChat() {
 
       {/* Input Form */}
       <form onSubmit={handleSubmit} className="flex gap-2">
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
+        <textarea
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
           placeholder="Type your message..."
           className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           disabled={isLoading}
         />
         <button
           type="submit"
-          disabled={isLoading || !input.trim()}
+          disabled={isLoading || !query.trim()}
           className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
         >
           {isLoading ? 'Sending...' : 'Send'}
