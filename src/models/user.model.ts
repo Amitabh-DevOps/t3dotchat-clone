@@ -1,4 +1,4 @@
-'use server';
+"use server";
 import mongoose, { Schema } from "mongoose";
 import { userType } from "@/types/user.type";
 
@@ -17,10 +17,39 @@ const UserSchema = new Schema<userType>(
       type: String,
       required: true,
     },
+    t3ChatInfo: {
+      username: {
+        type: String,
+      },
+      profession: {
+        type: String,
+      },
+      skills: {
+        type: [String],
+      },
+      additionalInfo: {
+        type: String,
+      },
+    },
+    apiKeys: [
+      {
+        model: {
+          type: String,
+        },
+        key: {
+          type: String,
+        },
+      },
+    ],
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );
 
-const User = mongoose.models?.User || mongoose.model<userType>("User", UserSchema);
+const User =
+  mongoose.models?.User || mongoose.model<userType>("User", UserSchema);
 
 export default User;

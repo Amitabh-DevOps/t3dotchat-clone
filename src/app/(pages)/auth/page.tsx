@@ -9,6 +9,7 @@ import { redirect } from "next/navigation";
 const AuthPage = async () => {
   const session = await auth();
   if(session){
+    console.log(session);
     return redirect("/");
   }
   const handleGoogleSignIn = async () => {

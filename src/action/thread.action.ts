@@ -4,6 +4,7 @@ import { serializeData } from "@/lib/constant";
 import Thread from "@/models/thread.model";
 import { auth } from "@/auth";
 import Message from "@/models/message.model";
+import { getMessageUsage } from "./message.action";
 
 export const getThread = async () => {
   const session = await auth();
@@ -33,7 +34,13 @@ export const getThread = async () => {
   }
 };
 
-export const createThread = async ({ title , threadId }: { title?: string , threadId: string}) => {
+export const createThread = async ({
+  title,
+  threadId,
+}: {
+  title?: string;
+  threadId: string;
+}) => {
   const session = await auth();
 
   if (!session?.user) {
@@ -45,11 +52,20 @@ export const createThread = async ({ title , threadId }: { title?: string , thre
 
   try {
     await connectDB();
+
+    const countMessages = await getMessageUsage();
+
+    if (countMessages.data && countMessages.data >= 20) {
+      return {
+        data: null,
+        error: "You have reached the maximum number of messages for today",
+      };
+    }
     const thread = await Thread.create({
       threadId: threadId,
       userId: session.user.id,
       title: title || "New Thread",
-      });
+    });
 
     return {
       data: serializeData(thread),
@@ -73,7 +89,6 @@ export const pinThread = async ({ threadId }: { threadId: string }) => {
     };
   }
   try {
-
     await connectDB();
 
     const thread = await Thread.findOne({
@@ -161,7 +176,7 @@ export const deleteThread = async ({ threadId }: { threadId: string }) => {
   }
   try {
     await connectDB();
-    
+
     const thread = await Thread.findOne({
       threadId: threadId,
       userId: session.user.id,
@@ -174,7 +189,7 @@ export const deleteThread = async ({ threadId }: { threadId: string }) => {
       };
     }
 
-    await Thread.deleteOne({  threadId: threadId });
+    await Thread.deleteOne({ threadId: threadId });
 
     await Message.deleteMany({ threadId: threadId });
 
@@ -183,6 +198,48 @@ export const deleteThread = async ({ threadId }: { threadId: string }) => {
       error: null,
     };
   } catch (error: any) {
+    return {
+      data: null,
+      error: error,
+    };
+  }
+};
+
+export const searchThread = async ({ query }: { query: string }) => {
+  const session = await auth();
+
+  if (!session?.user) {
+    return {
+      data: null,
+      error: "Unauthorized",
+    };
+  }
+  try {
+    await connectDB();
+
+    if (query) {
+      const threads = await Thread.find({
+        userId: session.user.id,
+        title: { $regex: query, $options: "i" },
+      })
+        .sort({ createdAt: -1 })
+        .select("threadId title isPinned");
+      return {
+        data: serializeData(threads),
+        error: null,
+      };
+    }
+
+    const threads = await Thread.find({
+      userId: session.user.id,
+    })
+      .sort({ createdAt: -1 })
+      .select("threadId title isPinned");
+    return {
+      data: serializeData(threads),
+      error: null,
+    };
+  } catch (error) {
     return {
       data: null,
       error: error,
