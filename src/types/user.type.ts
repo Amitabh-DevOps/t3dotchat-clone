@@ -11,9 +11,13 @@ export interface userType extends Document {
     skills: string[];
     additionalInfo: string;
   }
+  models: {
+    selected: string[];
+    favorite: string[];
+  },
   apiKeys: {
     model: string;
     key: string;
-  }[],  
+  },  
   isDeleted: boolean;
 }
