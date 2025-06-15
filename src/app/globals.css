@@ -333,7 +333,6 @@ body {
 }
 .button-reflect {
   --min: #2e001f40 !important;
-  --max: #ffa6e2b0 !important;
   --start: #000000d9 !important;
 }
 
@@ -444,7 +443,6 @@ body {
 }
 
 .small-scrollbar::-webkit-scrollbar-thumb {
-  transition: background 0.2s ease-in-out;
   background: transparent;
   border-radius: 4px;
   border: 1.5px solid transparent;
@@ -544,6 +542,20 @@ body {
     padding: 0 !important;
   }
 }
-* {
+
+span {
   white-space-collapse: unset !important;
+}
+
+.messageLoader {
+  width: 10px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  animation: l5 1s infinite linear alternate;
+}
+@keyframes l5 {
+    0%  {box-shadow: 20px 0 var(--color-accent), -20px 0 var(--color-secondary);background: var(--color-accent) }
+    33% {box-shadow: 20px 0 var(--color-accent), -20px 0 var(--color-secondary);background: var(--color-secondary)}
+    66% {box-shadow: 20px 0 var(--color-secondary),-20px 0 var(--color-accent); background: var(--color-secondary)}
+    100%{box-shadow: 20px 0 var(--color-secondary),-20px 0 var(--color-accent); background: var(--color-accent) }
 }

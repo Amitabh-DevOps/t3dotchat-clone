@@ -34,7 +34,7 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
   onBranch,
   showBranch = false,
   showEdit = true,
-  modelName
+  modelName,
 }) => {
   return (
     <div className="flex items-center gap-1">
@@ -48,16 +48,16 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
       >
         <div className="relative size-4">
           <Copy
-            className="absolute inset-0 h-4 w-4 transition-all duration-200 ease-snappy scale-100 opacity-100"
+            className="absolute inset-0 h-4 w-4 transition-[opacity, translate-x] duration-200 ease-snappy scale-100 opacity-100"
             aria-hidden="true"
           />
           <Check
-            className="absolute inset-0 h-4 w-4 transition-all duration-200 ease-snappy scale-0 opacity-0"
+            className="absolute inset-0 h-4 w-4 transition-[opacity, translate-x] duration-200 ease-snappy scale-0 opacity-0"
             aria-hidden="true"
           />
         </div>
       </Button>
-      
+
       {showBranch && (
         <Button
           variant="ghost"
@@ -69,17 +69,17 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
         >
           <div className="relative size-4">
             <GitBranch
-              className="absolute inset-0 h-4 w-4 transition-all duration-200 ease-snappy scale-100 opacity-100"
+              className="absolute inset-0 h-4 w-4 transition-[opacity, translate-x] duration-200 ease-snappy scale-100 opacity-100"
               aria-hidden="true"
             />
             <Check
-              className="absolute inset-0 h-4 w-4 transition-all duration-200 ease-snappy scale-0 opacity-0"
+              className="absolute inset-0 h-4 w-4 transition-[opacity, translate-x] duration-200 ease-snappy scale-0 opacity-0"
               aria-hidden="true"
             />
           </div>
         </Button>
       )}
-      
+
       <Button
         variant="ghost"
         size="icon"
@@ -90,14 +90,11 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
         data-state="closed"
       >
         <div className="relative size-4">
-          <RefreshCcw
-            className="absolute inset-0 h-4 w-4"
-            aria-hidden="true"
-          />
+          <RefreshCcw className="absolute inset-0 h-4 w-4" aria-hidden="true" />
           <span className="sr-only">Retry</span>
         </div>
       </Button>
-      
+
       {showEdit && (
         <Button
           variant="ghost"
@@ -110,7 +107,7 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
           <SquarePen className="h-4 w-4" aria-hidden="true" />
         </Button>
       )}
-      
+
       {modelName && (
         <div className="flex items-center gap-1 text-xs text-muted-foreground">
           <span>{modelName}</span>
@@ -134,7 +131,7 @@ export const UserMessage: React.FC<UserMessageProps> = ({
   messageId,
   onRetry,
   onEdit,
-  onCopy
+  onCopy,
 }) => {
   return (
     <div data-message-id={messageId} className="flex justify-end">
@@ -164,40 +161,48 @@ export const UserMessage: React.FC<UserMessageProps> = ({
 };
 
 // Code Block Highlighter Component
-const CodeBlockHighlighter = ({ htmlContent = '', lang = 'javascript', theme = '' }) => {
-  const [processedHtml, setProcessedHtml] = useState('');
+const CodeBlockHighlighter = ({
+  htmlContent = "",
+  lang = "javascript",
+  theme = "",
+}) => {
+  const [processedHtml, setProcessedHtml] = useState("");
 
   useEffect(() => {
     const highlightCodeBlocks = async () => {
       try {
         // Create a temporary DOM element to parse HTML
         const parser = new DOMParser();
-        const doc = parser.parseFromString(htmlContent, 'text/html');
-        const myTheme = createCssVariablesTheme({ 
-            name: 'css-variables',
-            variablePrefix: '--shiki-',
-            variableDefaults: {},
-            fontStyle: true
-          })    
+        const doc = parser.parseFromString(htmlContent, "text/html");
+        const myTheme = createCssVariablesTheme({
+          name: "css-variables",
+          variablePrefix: "--shiki-",
+          variableDefaults: {},
+          fontStyle: true,
+        });
         // Find all code elements within pre tags
-        const codeBlocks = doc.querySelectorAll('pre code');
+        const codeBlocks = doc.querySelectorAll("pre code");
         const highlighter = await createHighlighter({
-            langs: ['javascript'],
-            themes: [myTheme] // register the theme
-          })
+          langs: ["javascript"],
+          themes: [myTheme], // register the theme
+        });
         // Process each code block
         for (const codeElement of codeBlocks) {
           const code = codeElement.textContent;
-          const highlighted = highlighter.codeToHtml(code || "", { lang, theme: 'css-variables' });
+          const highlighted = highlighter.codeToHtml(code || "", {
+            lang,
+            theme: "css-variables",
+          });
           // Replace the code element's content with highlighted HTML
-          codeElement.innerHTML = highlighted?.match(/<pre[^>]*>([\s\S]*?)<\/pre>/)?.[1] || "";
+          codeElement.innerHTML =
+            highlighted?.match(/<pre[^>]*>([\s\S]*?)<\/pre>/)?.[1] || "";
         }
 
         // Serialize back to HTML
         const processed = doc.body.innerHTML;
         setProcessedHtml(processed);
       } catch (error) {
-        console.error('Error highlighting code blocks:', error);
+        console.error("Error highlighting code blocks:", error);
         setProcessedHtml(htmlContent);
       }
     };
@@ -232,9 +237,9 @@ export const AIResponse: React.FC<AIResponseProps> = ({
   modelName = "Gemini 2.5 Flash",
   onRetry,
   onCopy,
-  onBranch
+  onBranch,
 }) => {
-  const [htmlContent, setHtmlContent] = useState('');
+  const [htmlContent, setHtmlContent] = useState("");
 
   useEffect(() => {
     const convertMarkdown = async () => {
@@ -243,7 +248,7 @@ export const AIResponse: React.FC<AIResponseProps> = ({
         const html = await marked(content || "");
         setHtmlContent(html);
       } catch (error) {
-        console.error('Error converting Markdown:', error);
+        console.error("Error converting Markdown:", error);
         setHtmlContent(content || "");
       }
     };
@@ -256,19 +261,29 @@ export const AIResponse: React.FC<AIResponseProps> = ({
         <div
           role="article"
           aria-label="Assistant message"
-          className="prose prose-pink max-w-none dark:prose-invert prose-pre:m-0 prose-pre:bg-transparent prose-pre:p-0"
+          className="prose  prose-pink max-w-none dark:prose-invert prose-pre:m-0 prose-pre:bg-transparent prose-pre:p-0"
         >
           <span className="sr-only">Assistant Reply: </span>
-          {isStreaming ? (
-            <div className="whitespace-pre-wrap">
-              <CodeBlockHighlighter htmlContent={htmlContent} lang="javascript" theme="vitesse-dark" />
-              {isLoading && (
-                <span className="animate-pulse bg-gray-400 inline-block w-2 h-5 ml-1"></span>
-              )}
-            </div>
-          ) : (
-            <CodeBlockHighlighter htmlContent={htmlContent} lang="javascript" theme="vitesse-dark" />
-          )}
+          <div>
+            {!content ? (
+              <div className="whitespace-pre-wrap">
+              <div className="messageLoader"></div> 
+
+              </div>
+            ) : isStreaming ? (
+              <CodeBlockHighlighter
+                htmlContent={htmlContent}
+                lang="javascript"
+                theme="vitesse-dark"
+              />
+            ) : (
+              <CodeBlockHighlighter
+                htmlContent={htmlContent}
+                lang="javascript"
+                theme="vitesse-dark"
+              />
+            )}
+          </div>
         </div>
         <div className="absolute left-0 -ml-0.5 mt-2 flex w-full flex-row justify-start gap-1 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 group-focus:opacity-100">
           <div className="flex w-full flex-row justify-between gap-1 sm:w-auto">
@@ -305,7 +320,7 @@ export const MessagePair: React.FC<MessagePairProps> = ({
   onCopyUser,
   onRetryAI,
   onCopyAI,
-  onBranchAI
+  onBranchAI,
 }) => {
   const aiContent = message?.aiResponse?.[0]?.content || "";
 
@@ -351,7 +366,7 @@ export const StreamingMessagePair: React.FC<StreamingMessagePairProps> = ({
   onCopyUser,
   onRetryAI,
   onCopyAI,
-  onBranchAI
+  onBranchAI,
 }) => {
   return (
     <div className="space-y-16">
