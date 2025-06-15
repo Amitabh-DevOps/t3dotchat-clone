@@ -31,6 +31,14 @@ const UserSchema = new Schema<userType>(
         type: String,
       },
     },
+    models: {
+      selected: {
+        type: [String],
+      },
+      favorite: {
+        type: [String],
+      },
+    },
     apiKeys: [
       {
         model: {
