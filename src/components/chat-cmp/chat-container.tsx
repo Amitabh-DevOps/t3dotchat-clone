@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { RefreshCcw, SquarePen, Copy, Check, GitBranch } from "lucide-react";
@@ -7,8 +7,10 @@ import chatStore from "@/stores/chat.store";
 import { getMessages } from "@/action/message.action";
 import { useIsMutating, useQuery } from "@tanstack/react-query";
 import { MessagePair, StreamingMessagePair } from "./message-container";
+
 const ChatContainer = () => {
   const params = useParams();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const {
     response,
     messages,
@@ -31,6 +33,22 @@ const ChatContainer = () => {
     refetchOnWindowFocus: false,
     enabled: !!params.chatid,
   });
+
+  // Auto-scroll to bottom when messages or response updates
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ 
+      behavior: "smooth",
+      block: "end"
+    });
+  };
+
+
+  // Scroll when response updates (streaming)
+  useEffect(() => {
+    if (response || isLoading) {
+      scrollToBottom();
+    }
+  }, [response, isLoading]);
 
   useEffect(() => {
     setMessages([]);
@@ -65,7 +83,7 @@ const ChatContainer = () => {
       role="log"
       aria-label="Chat messages"
       aria-live="polite"
-      className="mx-auto flex w-full max-w-3xl flex-col space-y-12 px-4 pb-60 pt-10"
+      className="mx-auto flex w-full max-w-3xl flex-col space-y-12 px-4 pb-20 pt-10"
     >
       {/* Render stored messages */}
       {messages &&
@@ -98,6 +116,9 @@ const ChatContainer = () => {
           onBranchAI={() => handleBranch("current-response")}
         />
       )}
+      
+      {/* Invisible element to scroll to */}
+      <div ref={messagesEndRef} className="h-20" />
     </div>
   );
 };

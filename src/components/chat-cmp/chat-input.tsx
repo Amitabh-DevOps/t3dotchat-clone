@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { useParams } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 import { useStreamResponse } from "@/hooks/use-response-stream";
+import SearchModels from "./search-models";
 
 interface ChatInputProps {
   placeholder?: string;
@@ -90,8 +91,9 @@ function ChatInput({
               <textarea
                 placeholder={placeholder}
                 autoFocus
+                id="chat-input"
                 value={input}
-                className="w-full max-h-64 min-h-[48px] resize-none bg-transparent text-base leading-6 text-foreground outline-none placeholder:text-secondary-foreground/60 disabled:opacity-50 transition-opacity"
+                className="w-full max-h-64 min-h-[54px] resize-none bg-transparent text-base leading-6 text-foreground outline-none placeholder:text-secondary-foreground/60 disabled:opacity-50 transition-opacity"
                 aria-label="Message input"
                 aria-describedby="chat-input-description"
                 autoComplete="off"
@@ -113,7 +115,7 @@ function ChatInput({
                   type="submit"
                   size="icon"
                   disabled={isLoading || !input.trim()}
-                  className="transition-all duration-200"
+                  className="transition-[opacity, translate-x] h-9 w-9 duration-200"
                 >
                   <ArrowUp className="!size-5" />
                 </Button>
@@ -122,47 +124,39 @@ function ChatInput({
               <div className="flex flex-col gap-2 pr-2 sm:flex-row sm:items-center">
                 <div className="ml-[-7px] flex items-center gap-1">
                   {/* Model Selector */}
-                  <button
-                    className="inline-flex items-center justify-center whitespace-nowrap font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 hover:bg-muted/40 hover:text-foreground disabled:hover:bg-transparent disabled:hover:text-foreground/50 h-8 rounded-md text-xs relative gap-2 px-2 py-1.5 -mb-2 text-muted-foreground"
-                    type="button"
-                    aria-haspopup="menu"
-                    aria-expanded="false"
-                    disabled={isLoading}
-                  >
-                    <div className="text-left text-sm font-medium">
-                      {modelName}
-                    </div>
-                    <ChevronDown className="right-0 size-4" />
-                  </button>
+                 <SearchModels/>
 
                   {/* Search Button */}
-                  <button
-                    className="inline-flex items-center justify-center whitespace-nowrap font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 hover:bg-muted/40 hover:text-foreground disabled:hover:bg-transparent disabled:hover:text-foreground/50 px-3 text-xs -mb-1.5 h-auto gap-2 rounded-full border border-solid border-secondary-foreground/10 py-1.5 pl-2 pr-2.5 text-muted-foreground max-sm:p-2"
-                    type="button"
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="bg-transparent hover:bg-muted/40 !rounded-full text-xs !h-auto py-1.5 !px-2"
                     aria-label={
                       isSearchEnabled
                         ? "Web search"
                         : "Web search not available on free plan"
                     }
-                    disabled={!isSearchEnabled || isLoading}
+                    // disabled={!isSearchEnabled || isLoading}
                   >
                     <Globe className="h-4 w-4" />
                     <span className="max-sm:hidden">Search</span>
-                  </button>
+                  </Button>
 
                   {/* File Attach Button */}
-                  <button
-                    className="inline-flex items-center justify-center whitespace-nowrap font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 hover:bg-muted/40 hover:text-foreground disabled:hover:bg-transparent disabled:hover:text-foreground/50 text-xs -mb-1.5 h-auto gap-2 rounded-full border border-solid border-secondary-foreground/10 px-2 py-1.5 pr-2.5 text-muted-foreground max-sm:p-2"
-                    type="button"
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="bg-transparent hover:bg-muted/40 !rounded-full text-xs !h-auto py-1.5 !px-2.5"
                     aria-label={
                       isFileAttachEnabled
                         ? "Attach file"
                         : "Attaching files is a subscriber-only feature"
                     }
-                    disabled={!isFileAttachEnabled || isLoading}
+                    // disabled={!isFileAttachEnabled || isLoading}
                   >
                     <Paperclip className="size-4" />
-                  </button>
+                  </Button>
+                
                 </div>
               </div>
             </div>
