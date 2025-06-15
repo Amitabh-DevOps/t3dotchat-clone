@@ -15,6 +15,7 @@ export const getThread = async () => {
       error: "Unauthorized",
     };
   }
+  
   try {
     await connectDB();
 
@@ -22,8 +23,33 @@ export const getThread = async () => {
       userId: session.user.id,
     }).sort({ createdAt: -1 });
 
+    // Get today's date range (start and end of today)
+    const today = new Date();
+    const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const endOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+
+    // Filter threads into categories
+    const pinnedThreads = threads.filter(thread => thread.isPinned === true);
+    
+    const todayThreads = threads.filter(thread => {
+      const threadDate = new Date(thread.createdAt);
+      return threadDate >= startOfToday && 
+             threadDate < endOfToday && 
+             thread.isPinned !== true; // Exclude pinned threads from today
+    });
+
+    const weekThreads = threads.filter(thread => {
+      const threadDate = new Date(thread.createdAt);
+      return !(threadDate >= startOfToday && threadDate < endOfToday) && // Not today
+             thread.isPinned !== true; // Not pinned
+    });
+
     return {
-      data: serializeData(threads),
+      data: {
+        pin: serializeData(pinnedThreads),
+        today: serializeData(todayThreads),
+        week: serializeData(weekThreads)
+      },
       error: null,
     };
   } catch (error: any) {
