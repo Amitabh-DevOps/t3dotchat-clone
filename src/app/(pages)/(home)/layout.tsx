@@ -335,18 +335,23 @@ export default async function ChatLayout({
           <SidebarFooter>
             <SidebarMenu>
               {session ? (
-                <SidebarMenuItem className="flex rounded-lg  p-2.5 mb-2 w-full hover:bg-sidebar-accent min-w-0 flex-row items-center gap-3">
-                  <img
-                    src={session.user?.image || ""}
-                    alt={session.user?.name || ""}
-                    className="h-8 w-8 bg-accent rounded-full ring-1 ring-muted-foreground/20"
-                  />
-                  <div className="flex min-w-0 flex-col text-foreground">
-                    <span className="truncate text-sm font-medium">
-                      {session.user?.name}
-                    </span>
-                    <span className="text-xs">Free</span>
-                  </div>
+                <SidebarMenuItem>
+                  <Link
+                    href="/settings/subscription"
+                    className="flex rounded-lg  p-2.5 mb-2 w-full hover:bg-sidebar-accent min-w-0 flex-row items-center gap-3"
+                  >
+                    <img
+                      src={session.user?.image || ""}
+                      alt={session.user?.name || ""}
+                      className="h-8 w-8 bg-accent rounded-full ring-1 ring-muted-foreground/20"
+                    />
+                    <div className="flex min-w-0 flex-col text-foreground">
+                      <span className="truncate text-sm font-medium">
+                        {session.user?.name}
+                      </span>
+                      <span className="text-xs">Free</span>
+                    </div>
+                  </Link>
                 </SidebarMenuItem>
               ) : (
                 <SidebarMenuItem className="p-1">
