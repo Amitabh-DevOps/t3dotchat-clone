@@ -45,11 +45,11 @@ export const getThread = async () => {
     });
 
     return {
-      data: {
-        pin: serializeData(pinnedThreads),
-        today: serializeData(todayThreads),
-        week: serializeData(weekThreads)
-      },
+        data: {
+          pin: serializeData(pinnedThreads),
+          today: serializeData(todayThreads),
+          week: serializeData(weekThreads)
+        },
       error: null,
     };
   } catch (error: any) {

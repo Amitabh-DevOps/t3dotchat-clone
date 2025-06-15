@@ -181,3 +181,42 @@ export const createMessage = async ({
     };
   }
 };
+
+export const regenerateAnotherResponse = async ({ messageId, aiResponse }: { messageId: string, aiResponse: { content: string; model: string } }) => {
+  const session = await auth();
+  if (!session?.user) {
+    return {
+      data: null,
+      error: "Unauthorized",
+    };
+  }
+  try {
+    await connectDB();
+
+    const message = await Message.findOne({
+      _id: messageId,
+      userId: session.user.id,
+    });
+
+    if (!message) {
+      return {
+        data: null,
+        error: "Message not found",
+      };
+    }
+
+    await message.aiResponse.push(aiResponse);
+
+    await message.save();
+
+    return {
+      data: serializeData(message),
+      error: null,
+    };
+  } catch (error: any) {
+    return {
+      data: null,
+      error: error.message || "Failed to regenerate response",
+    };
+  }
+}
