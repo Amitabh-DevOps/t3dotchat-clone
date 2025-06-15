@@ -31,7 +31,7 @@ import Link from "next/link";
 import BranchOffIcon from "../../../../public/icons/branch-off";
 import { auth } from "@/auth";
 import ChatInput from "@/components/chat-cmp/chat-input";
-import ThreadSearch from "@/components/chat-cmp/thread-search";
+import SearchThreads from "@/components/chat-cmp/search-threads";
 
 function ChatLayoutContent({ children }: { children: React.ReactNode }) {
   return (
@@ -58,14 +58,14 @@ function ChatLayoutContent({ children }: { children: React.ReactNode }) {
       <div className="pointer-events-auto fixed h-fit left-2 top-2 z-50 flex flex-row gap-0.5 p-1 inset-0 right-auto text-muted-foreground rounded-md backdrop-blur-sm transition-[width] delay-125 duration-100  bg-sidebar blur-fallback:bg-sidebar max-sm:delay-125 max-sm:duration-100 max-sm:w-[6.75rem] max-sm:bg-sidebar">
         <SidebarTrigger />
         <div
-          className={`transition-[opacity, translate-x] flex flex-nowrap duration-200 ease-snappy gap-0.5 has-[.sidebar-check:not(:checked)]:-translate-x-[20px] has-[.sidebar-check:not(:checked)]:opacity-0 has-[.sidebar-check:not(:checked)]:w-0 has-[.sidebar-check:not(:checked)]:-z-50 has-[.sidebar-check:not(:checked)]:h-0 `}
+          className={`transition-[opacity, translate-x] has-[.sidebar-check:not(:checked)]:pointer-events-none  flex flex-nowrap duration-200 ease-snappy gap-0.5 has-[.sidebar-check:not(:checked)]:-translate-x-[20px] has-[.sidebar-check:not(:checked)]:opacity-0 has-[.sidebar-check:not(:checked)]:w-0 has-[.sidebar-check:not(:checked)]:-z-50 has-[.sidebar-check:not(:checked)]:h-0 `}
         >
           <input
             className="hidden sidebar-check"
             type="checkbox"
             name="sidebar-check"
           />
-          <ThreadSearch />
+          <SearchThreads />
           <Button variant="ghost" className="p-0" size="icon">
             <Link href="/" className="w-full h-full grid place-items-center">
               <FiPlus />

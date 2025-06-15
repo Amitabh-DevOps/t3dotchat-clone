@@ -1,104 +1,81 @@
-// components/SimpleStreamingChat.tsx
-'use client';
+"use client";
 
-import { useStreamResponse } from '@/hooks/use-response-stream';
-import chatStore from '@/stores/chat.store'; // Adjust path as needed
+import { generateLoveDefinition } from "@/action/temp.action";
+import { useState } from "react";
 
-export default function SimpleStreamingChat() {
-  const { query, setQuery, response, messages } = chatStore();
-  const { isLoading, error, sendMessage, clearMessages } = useStreamResponse();
+export default function Chatbot() {
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!query.trim() || isLoading) return;
+  const handleSendMessage = async () => {
+    if (!input.trim()) return;
 
-    await sendMessage({chatid:"da50400a-d5e6-413b-9e6d-ced59fa9c7f1"});
-    setQuery('');
+    // Add user message to chat
+    const userMessage = { role: "user", content: input };
+    setMessages((prev) => [...prev, userMessage]);
+    setInput("");
+    setLoading(true);
+    setError(null);
+
+    // Call server action with user input
+    const response = await generateLoveDefinition(input);
+    if (response.success) {
+      const botMessage = { role: "bot", content: response.text };
+      setMessages((prev) => [...prev, botMessage]);
+    } else {
+      setError(response.error);
+    }
+    setLoading(false);
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter" && !loading) {
+      handleSendMessage();
+    }
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 h-screen flex flex-col">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Simple Streaming Chat</h1>
-        <button
-          onClick={clearMessages}
-          className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
-        >
-          Clear Chat
-        </button>
-      </div>
-      
-      {/* Messages Container */}
-      <div className="flex-1 overflow-y-auto mb-4 space-y-4 bg-gray-50 p-4 rounded-lg">
-        {messages.map((message, index) => (
-          <div key={index} className="space-y-3">
-            {/* User Query */}
-            <div className="p-3 rounded-lg max-w-[80%] bg-blue-500 text-white ml-auto">
-              <div className="text-sm font-semibold mb-1">User</div>
-              <p>{message.userQuery}</p>
-            </div>
-            
-            {/* AI Response */}
-            <div className="p-3 rounded-lg max-w-[80%] bg-white text-gray-800 border">
-              <div className="text-sm font-semibold mb-1">Assistant</div>
-              <p>{message.aiResponse[0].content}</p>
-            </div>
+    <div className="flex flex-col h-screen max-w-2xl mx-auto p-4 bg-gray-100">
+      <h1 className="text-2xl font-bold mb-4 text-center">LoveBot</h1>
+      <div className="flex-1 overflow-y-auto bg-white rounded-lg shadow p-4 mb-4">
+        {messages.map((msg, index) => (
+          <div
+            key={index}
+            className={`mb-2 p-2 rounded-lg ${
+              msg.role === "user"
+                ? "bg-blue-100 ml-auto max-w-[80%]"
+                : "bg-gray-200 mr-auto max-w-[80%]"
+            }`}
+          >
+            <span className="font-semibold">{msg.role === "user" ? "You" : "LoveBot"}: </span>
+            {msg.content}
           </div>
         ))}
-        
-        {/* Current streaming response */}
-        {(response || isLoading) && (
-          <div className="space-y-3">
-            {/* Current user query */}
-            <div className="p-3 rounded-lg max-w-[80%] bg-blue-500 text-white ml-auto">
-              <div className="text-sm font-semibold mb-1">User</div>
-              <p>{query}</p>
-            </div>
-            
-            {/* Streaming AI response */}
-            <div className="p-3 rounded-lg max-w-[80%] bg-white text-gray-800 border">
-              <div className="text-sm font-semibold mb-1">Assistant</div>
-              <div className="whitespace-pre-wrap">
-                {response}
-                {isLoading && (
-                  <span className="animate-pulse bg-gray-400 inline-block w-2 h-5 ml-1"></span>
-                )}
-              </div>
-            </div>
-          </div>
+        {loading && (
+          <div className="text-center text-gray-500">LoveBot is thinking...</div>
         )}
-        
-        {messages.length === 0 && !isLoading && (
-          <div className="text-center text-gray-500 py-8">
-            Start a conversation by typing a message below
-          </div>
-        )}
+        {error && <div className="text-red-500 text-center">{error}</div>}
       </div>
-
-      {error && (
-        <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-          <strong>Error:</strong> {error}
-        </div>
-      )}
-
-      {/* Input Form */}
-      <form onSubmit={handleSubmit} className="flex gap-2">
-        <textarea
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Type your message..."
-          className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          disabled={isLoading}
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyPress={handleKeyPress}
+          placeholder="Ask about love or anything else..."
+          className="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          disabled={loading}
         />
         <button
-          type="submit"
-          disabled={isLoading || !query.trim()}
-          className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
+          onClick={handleSendMessage}
+          disabled={loading}
+          className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-400"
         >
-          {isLoading ? 'Sending...' : 'Send'}
+          Send
         </button>
-      </form>
+      </div>
     </div>
   );
 }
