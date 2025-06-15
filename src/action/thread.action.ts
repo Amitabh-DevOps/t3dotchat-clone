@@ -59,7 +59,84 @@ export const getThread = async () => {
     };
   }
 };
+export const pinThread = async ({ threadId }: { threadId: string }) => {
+  const session = await auth();
 
+  if (!session?.user) {
+    return {
+      data: null,
+      error: "Unauthorized",
+    };
+  }
+  try {
+    await connectDB();
+
+    const thread = await Thread.findOne({
+      threadId: threadId,
+      userId: session.user.id,
+    });
+
+    if (!thread) {
+      return {
+        data: null,
+        error: "Thread not found",
+      };
+    }
+
+    thread.isPinned = !thread.isPinned;
+
+    await thread.save();
+
+    return {
+      data: serializeData(thread),
+      error: null,
+    };
+  } catch (error: any) {
+    return {
+      data: null,
+      error: error,
+    };
+  }
+};
+export const deleteThread = async ({ threadId }: { threadId: string }) => {
+  const session = await auth();
+
+  if (!session?.user) {
+    return {
+      data: null,
+      error: "Unauthorized",
+    };
+  }
+  try {
+    await connectDB();
+
+    const thread = await Thread.findOne({
+      threadId: threadId,
+      userId: session.user.id,
+    });
+
+    if (!thread) {
+      return {
+        data: null,
+        error: "Thread not found",
+      };
+    }
+
+    await Thread.deleteOne({ threadId: threadId });
+
+    await Message.deleteMany({ threadId: threadId });
+
+    return {
+      data: serializeData(thread),
+      error: null,
+    };
+  } catch (error: any) {
+    return {
+      data: null,
+      error: error,
+    };
+  }
+};
 export const createThread = async ({
   title,
   threadId,
@@ -105,45 +182,6 @@ export const createThread = async ({
   }
 };
 
-export const pinThread = async ({ threadId }: { threadId: string }) => {
-  const session = await auth();
-
-  if (!session?.user) {
-    return {
-      data: null,
-      error: "Unauthorized",
-    };
-  }
-  try {
-    await connectDB();
-
-    const thread = await Thread.findOne({
-      threadId: threadId,
-      userId: session.user.id,
-    });
-
-    if (!thread) {
-      return {
-        data: null,
-        error: "Thread not found",
-      };
-    }
-
-    thread.isPinned = !thread.isPinned;
-
-    await thread.save();
-
-    return {
-      data: serializeData(thread),
-      error: null,
-    };
-  } catch (error: any) {
-    return {
-      data: null,
-      error: error,
-    };
-  }
-};
 
 export const renameThread = async ({
   threadId,
@@ -191,45 +229,7 @@ export const renameThread = async ({
   }
 };
 
-export const deleteThread = async ({ threadId }: { threadId: string }) => {
-  const session = await auth();
 
-  if (!session?.user) {
-    return {
-      data: null,
-      error: "Unauthorized",
-    };
-  }
-  try {
-    await connectDB();
-
-    const thread = await Thread.findOne({
-      threadId: threadId,
-      userId: session.user.id,
-    });
-
-    if (!thread) {
-      return {
-        data: null,
-        error: "Thread not found",
-      };
-    }
-
-    await Thread.deleteOne({ threadId: threadId });
-
-    await Message.deleteMany({ threadId: threadId });
-
-    return {
-      data: serializeData(thread),
-      error: null,
-    };
-  } catch (error: any) {
-    return {
-      data: null,
-      error: error,
-    };
-  }
-};
 
 export const searchThread = async ({ query }: { query: string }) => {
   const session = await auth();

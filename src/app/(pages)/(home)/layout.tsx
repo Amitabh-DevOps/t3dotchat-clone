@@ -32,6 +32,7 @@ import BranchOffIcon from "../../../../public/icons/branch-off";
 import { auth } from "@/auth";
 import ChatInput from "@/components/chat-cmp/chat-input";
 import SearchThreads from "@/components/chat-cmp/search-threads";
+import SidebarThreads from "@/components/global-cmp/sidebar-threads";
 
 function ChatLayoutContent({ children }: { children: React.ReactNode }) {
   return (
@@ -55,7 +56,7 @@ function ChatLayoutContent({ children }: { children: React.ReactNode }) {
         </div>
       </main>
 
-      <div className="pointer-events-auto fixed h-fit left-2 top-2 z-50 flex flex-row gap-0.5 p-1 inset-0 right-auto text-muted-foreground rounded-md backdrop-blur-sm transition-[width] delay-125 duration-100  bg-sidebar blur-fallback:bg-sidebar max-sm:delay-125 max-sm:duration-100 max-sm:w-[6.75rem] max-sm:bg-sidebar">
+      <div className="pointer-events-auto t3-header-search fixed h-fit left-2 top-2 z-50 flex flex-row gap-0.5 p-1 inset-0 right-auto text-muted-foreground rounded-md backdrop-blur-sm transition-[width] delay-125 duration-100  bg-sidebar blur-fallback:bg-sidebar max-sm:delay-125 max-sm:duration-100 max-sm:w-[6.75rem] max-sm:bg-sidebar">
         <SidebarTrigger />
         <div
           className={`transition-[opacity, translate-x] has-[.sidebar-check:not(:checked)]:pointer-events-none  flex flex-nowrap duration-200 ease-snappy gap-0.5 has-[.sidebar-check:not(:checked)]:-translate-x-[20px] has-[.sidebar-check:not(:checked)]:opacity-0 has-[.sidebar-check:not(:checked)]:w-0 has-[.sidebar-check:not(:checked)]:-z-50 has-[.sidebar-check:not(:checked)]:h-0 `}
@@ -132,212 +133,7 @@ export default async function ChatLayout({
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarHeader>
-          <SidebarContent>
-            <SidebarGroup>
-              <SidebarGroupLabel className="gap-1">
-                <LuPin className="!w-3 !h-3" /> Pinned
-              </SidebarGroupLabel>
-              <SidebarMenu>
-                <SidebarMenuItem className="hover:bg-sidebar-accent overflow-hidden flex items-center relative px-0 group/link-item rounded-lg ">
-                  <Link className="block p-2 px-3 " href="/">
-                    Goodbye Message
-                  </Link>
-                  <div className="flex *:size-7 bg-sidebar-accent transition-[opacity, translate-x] items-center gap-1 absolute group-hover/link-item:right-1 -right-[100px] ">
-                    <Button variant="ghost" size="icon">
-                      <LuPinOff />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="hover:!bg-destructive/50 hover:!text-destructive-foreground"
-                      size="icon"
-                    >
-                      <IoMdClose />
-                    </Button>
-                  </div>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroup>
-            <SidebarGroup>
-              <SidebarGroupLabel>Today</SidebarGroupLabel>
-              <SidebarMenu>
-                <SidebarMenuItem className="hover:bg-sidebar-accent overflow-hidden flex items-center relative px-0 group/link-item rounded-lg ">
-                  <Link className="block p-2 px-3 " href="/">
-                    Goodbye Message
-                  </Link>
-                  <div className="flex *:size-7 bg-sidebar-accent transition-[opacity, translate-x] items-center gap-1 absolute group-hover/link-item:right-1 -right-[100px] ">
-                    <Button variant="ghost" size="icon">
-                      <LuPin />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="hover:!bg-destructive/50 hover:!text-destructive-foreground"
-                      size="icon"
-                    >
-                      <IoMdClose />
-                    </Button>
-                  </div>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroup>
-            <SidebarGroup>
-              <SidebarGroupLabel>Yesterday</SidebarGroupLabel>
-              <SidebarMenu>
-                <SidebarMenuItem className="hover:bg-sidebar-accent overflow-hidden flex items-center relative px-0 group/link-item rounded-lg ">
-                  <Link className="block p-2 px-3 " href="/">
-                    Goodbye Message
-                  </Link>
-                  <div className="flex *:size-7 bg-sidebar-accent transition-[opacity, translate-x] items-center gap-1 absolute group-hover/link-item:right-1 -right-[100px] ">
-                    <Button variant="ghost" size="icon">
-                      <LuPin />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="hover:!bg-destructive/50 hover:!text-destructive-foreground"
-                      size="icon"
-                    >
-                      <IoMdClose />
-                    </Button>
-                  </div>
-                </SidebarMenuItem>
-                <SidebarMenuItem className="hover:bg-sidebar-accent overflow-hidden flex items-center relative px-0 group/link-item rounded-lg ">
-                  <Link className="block p-2 px-3 " href="/">
-                    Goodbye Message
-                  </Link>
-                  <div className="flex *:size-7 bg-sidebar-accent transition-[opacity, translate-x] items-center gap-1 absolute group-hover/link-item:right-1 -right-[100px] ">
-                    <Button variant="ghost" size="icon">
-                      <LuPin />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="hover:!bg-destructive/50 hover:!text-destructive-foreground"
-                      size="icon"
-                    >
-                      <IoMdClose />
-                    </Button>
-                  </div>
-                </SidebarMenuItem>
-                <SidebarMenuItem className="hover:bg-sidebar-accent overflow-hidden flex items-center relative px-0 group/link-item rounded-lg ">
-                  <Link className="block p-2 px-3 " href="/">
-                    Goodbye Message
-                  </Link>
-                  <div className="flex *:size-7 bg-sidebar-accent transition-[opacity, translate-x] items-center gap-1 absolute group-hover/link-item:right-1 -right-[100px] ">
-                    <Button variant="ghost" size="icon">
-                      <LuPin />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="hover:!bg-destructive/50 hover:!text-destructive-foreground"
-                      size="icon"
-                    >
-                      <IoMdClose />
-                    </Button>
-                  </div>
-                </SidebarMenuItem>
-                <SidebarMenuItem className="hover:bg-sidebar-accent overflow-hidden flex items-center relative px-0 group/link-item rounded-lg ">
-                  <Link
-                    className="p-2 px-3  truncate flex items-center gap-2 "
-                    href="/"
-                  >
-                    <BranchOffIcon />
-                    <p className="flex-1/2 truncate">
-                      Goodbye Messagedsdsdsdsd dsdsdsdsdsdsdsd
-                    </p>
-                  </Link>
-                  <div className="flex *:size-7 bg-sidebar-accent blur-fallback:bg-sidebar backdrop-blur-sm transition-[opacity, translate-x] items-center gap-1 absolute group-hover/link-item:right-1 -right-[100px] ">
-                    <Button variant="ghost" size="icon">
-                      <LuPin />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="hover:!bg-destructive/50 hover:!text-destructive-foreground"
-                      size="icon"
-                    >
-                      <IoMdClose />
-                    </Button>
-                  </div>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroup>
-            <SidebarGroup>
-              <SidebarGroupLabel>Yesterday</SidebarGroupLabel>
-              <SidebarMenu>
-                <SidebarMenuItem className="hover:bg-sidebar-accent overflow-hidden flex items-center relative px-0 group/link-item rounded-lg ">
-                  <Link className="block p-2 px-3 " href="/">
-                    Goodbye Message
-                  </Link>
-                  <div className="flex *:size-7 bg-sidebar-accent transition-[opacity, translate-x] items-center gap-1 absolute group-hover/link-item:right-1 -right-[100px] ">
-                    <Button variant="ghost" size="icon">
-                      <LuPin />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="hover:!bg-destructive/50 hover:!text-destructive-foreground"
-                      size="icon"
-                    >
-                      <IoMdClose />
-                    </Button>
-                  </div>
-                </SidebarMenuItem>
-                <SidebarMenuItem className="hover:bg-sidebar-accent overflow-hidden flex items-center relative px-0 group/link-item rounded-lg ">
-                  <Link className="block p-2 px-3 " href="/">
-                    Goodbye Message
-                  </Link>
-                  <div className="flex *:size-7 bg-sidebar-accent transition-[opacity, translate-x] items-center gap-1 absolute group-hover/link-item:right-1 -right-[100px] ">
-                    <Button variant="ghost" size="icon">
-                      <LuPin />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="hover:!bg-destructive/50 hover:!text-destructive-foreground"
-                      size="icon"
-                    >
-                      <IoMdClose />
-                    </Button>
-                  </div>
-                </SidebarMenuItem>
-                <SidebarMenuItem className="hover:bg-sidebar-accent overflow-hidden flex items-center relative px-0 group/link-item rounded-lg ">
-                  <Link className="block p-2 px-3 " href="/">
-                    Goodbye Message
-                  </Link>
-                  <div className="flex *:size-7 bg-sidebar-accent transition-[opacity, translate-x] items-center gap-1 absolute group-hover/link-item:right-1 -right-[100px] ">
-                    <Button variant="ghost" size="icon">
-                      <LuPin />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="hover:!bg-destructive/50 hover:!text-destructive-foreground"
-                      size="icon"
-                    >
-                      <IoMdClose />
-                    </Button>
-                  </div>
-                </SidebarMenuItem>
-                <SidebarMenuItem className="hover:bg-sidebar-accent overflow-hidden flex items-center relative px-0 group/link-item rounded-lg ">
-                  <Link
-                    className="p-2 px-3  truncate flex items-center gap-2 "
-                    href="/"
-                  >
-                    <BranchOffIcon />
-                    <p className="flex-1/2 truncate">
-                      Goodbye Messagedsdsdsdsd dsdsdsdsdsdsdsd
-                    </p>
-                  </Link>
-                  <div className="flex *:size-7 bg-sidebar-accent blur-fallback:bg-sidebar backdrop-blur-sm transition-[opacity, translate-x] items-center gap-1 absolute group-hover/link-item:right-1 -right-[100px] ">
-                    <Button variant="ghost" size="icon">
-                      <LuPin />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="hover:!bg-destructive/50 hover:!text-destructive-foreground"
-                      size="icon"
-                    >
-                      <IoMdClose />
-                    </Button>
-                  </div>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroup>
-          </SidebarContent>
+          <SidebarThreads />
           <SidebarFooter>
             <SidebarMenu>
               {session ? (

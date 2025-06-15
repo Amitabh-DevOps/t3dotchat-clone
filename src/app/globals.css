@@ -559,3 +559,12 @@ span {
     66% {box-shadow: 20px 0 var(--color-secondary),-20px 0 var(--color-accent); background: var(--color-secondary)}
     100%{box-shadow: 20px 0 var(--color-secondary),-20px 0 var(--color-accent); background: var(--color-accent) }
 }
+
+.t3-tools:has(~ .mark-response p) {
+  display: none;
+}
+
+
+.t3-tools:has(~ .mark-response t3-artifact) {
+  display: none;
+}

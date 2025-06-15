@@ -10,7 +10,15 @@ interface Message {
 interface UseStreamResponseReturn {
   isLoading: boolean;
   error: string | null;
-  sendMessage: ({ chatid }: { chatid: string }) => Promise<void>;
+  sendMessage: ({
+    chatid,
+    attachmentUrl,
+    resetAttachment,
+  }: {
+    chatid: string;
+    attachmentUrl?: string;
+    resetAttachment?: () => void;
+  }) => Promise<void>;
   clearMessages: () => void;
 }
 
@@ -19,12 +27,22 @@ export function useStreamResponse(): UseStreamResponseReturn {
   const [error, setError] = useState<string | null>(null);
 
   const sendMessage = useCallback(
-    async ({ chatid }: { chatid: string }) => {
+    async ({
+      chatid,
+      attachmentUrl,
+      resetAttachment,
+    }: {
+      chatid: string;
+      attachmentUrl?: string;
+      resetAttachment?: () => void;
+    }) => {
       const { query, messages, setMessages, setResponse, setQuery } =
         chatStore.getState();
 
       if (!query?.trim() || isLoading) return;
       const trimmedQuery = query.trim();
+      const attachment = attachmentUrl ? attachmentUrl : "";
+      resetAttachment && resetAttachment();
       setIsLoading(true);
       setResponse("");
       setError(null);
@@ -33,15 +51,30 @@ export function useStreamResponse(): UseStreamResponseReturn {
         const apiMessages =
           messages && Array.isArray(messages) && messages.length > 0
             ? messages.flatMap((msg: Message) => [
-                { role: "user" as const, content: msg.userQuery },
+                {
+                  role: "user" as const,
+                  content: [{ type: "text", text: msg.userQuery }],
+                },
                 {
                   role: "assistant" as const,
-                  content: msg.aiResponse[0]?.content || "",
+                  content: [
+                    { type: "text", text: msg.aiResponse[0]?.content || "" },
+                  ],
                 },
               ])
             : [];
 
-        apiMessages.push({ role: "user" as const, content: trimmedQuery });
+        apiMessages.push({
+          role: "user" as const,
+          content: [
+            {
+              type: attachment ? "image" : "text",
+              mimeType: attachment ? "image/jpeg" : "text/plain",
+              text: trimmedQuery,
+              image: attachment ? new URL(attachment) : undefined,
+            } as any,
+          ],
+        });
 
         const response = await fetch("/api/chat", {
           method: "POST",
@@ -76,18 +109,22 @@ export function useStreamResponse(): UseStreamResponseReturn {
           chatStore.getState().setResponse(assistantResponse);
         }
 
-
+        console.log(chatid);
         const savedMessage = await createMessage({
           threadId: chatid,
           userQuery: query,
+          attachment: attachment,
           aiResponse: [
             { content: assistantResponse, model: "Gemini 2.5 Flash" },
           ],
         });
+        console.log(savedMessage);
         const currentMessages =
           messages && Array.isArray(messages) ? messages : [];
-        console.log([...currentMessages, {...savedMessage.data}]);
-        chatStore.getState().setMessages([...currentMessages, {...savedMessage.data}]);
+        console.log([...currentMessages, { ...savedMessage.data }]);
+        chatStore
+          .getState()
+          .setMessages([...currentMessages, { ...savedMessage.data }]);
         chatStore.getState().setResponse("");
       } catch (err) {
         console.error("Streaming error:", err);

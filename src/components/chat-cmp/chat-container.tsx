@@ -116,7 +116,6 @@ const ChatContainer = () => {
           onBranchAI={() => handleBranch("current-response")}
         />
       )}
-      
       {/* Invisible element to scroll to */}
       <div ref={messagesEndRef} className="h-20" />
     </div>

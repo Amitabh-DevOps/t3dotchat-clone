@@ -1,48 +1,112 @@
 "use server";
-import { generateText, tool } from "ai";
+
+import { Output, streamObject, streamText, tool } from 'ai';
+import { z } from 'zod';
 import { google } from "@ai-sdk/google";
-import { z } from "zod";
+import { marked } from 'marked';
 
-// Mock weather data function
-const getMockWeather = (location: string) => {
-    console.log(location);
-  const mockData = {
-    "New York": { temperature: 72, condition: "Sunny", humidity: 60 },
-    "London": { temperature: 65, condition: "Cloudy", humidity: 75 },
-    "Tokyo": { temperature: 80, condition: "Rainy", humidity: 80 },
-    default: { temperature: 70, condition: "Partly Cloudy", humidity: 65 },
-  };
+const searchTavily = async (query: string) => {
+  const TAVILY_API_KEY = process.env.TAVILY_API_KEY;
+  
+  if (!TAVILY_API_KEY) {
+    throw new Error('TAVILY_API_KEY environment variable is not set');
+  }
 
-  return mockData[location] || mockData.default;
+  try {
+    const response = await fetch('https://api.tavily.com/search', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${TAVILY_API_KEY}`,
+      },
+      body: JSON.stringify({
+        query,
+        search_depth: 'basic',
+        include_answer: true,
+        include_raw_content: false,
+        max_results: 5,
+        include_domains: [],
+        exclude_domains: []
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Tavily API error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Tavily search error:', error);
+    throw error;
+  }
 };
 
-export async function generateLoveDefinition(prompt: string) {
-  try {
-    const { text } = await generateText({
-      model: google("models/gemini-2.0-flash-exp"),
-      maxSteps: 2,
-      tools: {
-        getWeather: tool({
-          description:
-            'A tool to get weather information for a specified location. ' +
-            'Example: "New York", "London", "Tokyo". Returns temperature (in Fahrenheit), condition, and humidity.',
-          parameters: z.object({ location: z.string() }),
-          execute: async ({ location }) => {
-            const weather = getMockWeather(location);
-            return {
-              location,
-              temperature: weather.temperature,
-              condition: weather.condition,
-              humidity: weather.humidity,
-            };
-          },
+export async function generateLoveDefinition(input: string) {
+  const {textStream, toolCalls} = await streamText({
+    model: google('models/gemini-2.0-flash-exp'),
+    
+    system: `You are a helpful AI assistant. You can help with various tasks including:
+    - Answering general questions of any response length  
+    - Getting weather information
+    - Searching the web for current information
+    - Note: You have to fulfill the user's request and you can provide information on any topic
+    
+    IMPORTANT FORMATTING RULE:
+    When you use any tool, you MUST wrap your entire response (including the information from the tool) inside <t3-artifact> tags like this:
+    
+    <t3-artifact>
+    [Your complete response based on the tool results goes here]
+    </t3-artifact>
+    
+    When you need to use a tool, briefly mention what you're doing (e.g., "Let me search for that information...") and then proceed with the tool call.
+    Always provide a complete response after using tools, and make sure to wrap it in the artifact tags.`,
+    
+    tools: {
+      searchWeb: tool({
+        description:
+          'Search the web for current information, news, facts, or any topic that requires up-to-date data. ' +
+          'Use this when you need recent information or specific facts not in your training data.',
+        parameters: z.object({ 
+          query: z.string().describe('The search query to find information about')
         }),
-      },
-      prompt: prompt || "What is love?",
-    });
-    return { success: true, text };
-  } catch (error) {
-    console.error("Error generating text:", error);
-    return { success: false, error: "Failed to generate text" };
+        execute: async ({ query }) => {
+          console.log(`Searching for: ${query}`);
+          try {
+            const searchResults = await searchTavily(query);
+            
+            // Format the results for the AI model
+            const formattedResults = {
+              query: query,
+              answer: searchResults.answer || 'No direct answer found',
+              results: searchResults.results?.map((result: any) => ({
+                title: result.title,
+                url: result.url,
+                content: result.content,
+                score: result.score
+              })) || []
+            };
+            
+            // Return just the data - let the AI format it with tags
+            return JSON.stringify(formattedResults, null, 2);
+            
+          } catch (error) {
+            console.error('Search error:', error);
+            return JSON.stringify({
+              query: query,
+              error: 'Failed to search the web. Please try again later.',
+              results: []
+            }, null, 2);
+          }
+        },
+      }),
+    },
+    toolChoice: "auto",
+    maxSteps: 2,
+    prompt: input
+  });
+
+  for await (const text of textStream) {
+    console.log(text);
   }
 }

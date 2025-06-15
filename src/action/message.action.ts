@@ -122,10 +122,12 @@ export const createMessage = async ({
   threadId,
   userQuery,
   aiResponse,
+  attachment,
 }: {
   threadId: string;
   userQuery: string;
   aiResponse: { content: string; model: string }[];
+  attachment?: string;
 }) => {
   const session = await auth();
 
@@ -164,6 +166,7 @@ export const createMessage = async ({
       userId: session.user.id,
       userQuery,
       aiResponse,
+      attachment: attachment || "",
     });
     console.log(message, "save message");
     return {
@@ -171,6 +174,7 @@ export const createMessage = async ({
       error: null,
     };
   } catch (error: any) {
+    console.log(error);
     return {
       data: null,
       error: error.message || "Failed to create message",
