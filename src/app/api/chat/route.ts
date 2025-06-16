@@ -3,6 +3,89 @@ import { streamText, tool } from "ai";
 import { google } from "@ai-sdk/google";
 import { auth } from "@/auth";
 import { z } from "zod";
+import { GoogleGenAI, Modality } from "@google/genai";
+import axios from "axios";
+
+const uploadToCloudinary = async (imageBuffer: Buffer, filename: string): Promise<any> => {
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+
+  if (!cloudName || !uploadPreset) {
+    throw new Error("Cloudinary configuration is missing");
+  }
+
+  const formData = new FormData();
+  
+  // Create a Blob from the buffer and append as file
+  const blob = new Blob([imageBuffer], { type: 'image/png' });
+  formData.append("file", blob, filename);
+  formData.append("upload_preset", uploadPreset);
+  formData.append("resource_type", "image");
+
+  try {
+    const endpoint = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+    
+    const response = await axios.post(endpoint, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    return response.data;
+  } catch (error: any) {
+    console.error("Cloudinary upload error:", error);
+    throw new Error(`Failed to upload to Cloudinary: ${error.message}`);
+  }
+};
+
+const generateImage = async (prompt: string) => {
+  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+
+  if (!GEMINI_API_KEY) {
+    throw new Error("GEMINI_API_KEY environment variable is not set");
+  }
+
+  try {
+    const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+    
+    const response = await ai.models.generateContent({
+      model: "gemini-2.0-flash-preview-image-generation",
+      contents: prompt,
+      config: {
+        responseModalities: [Modality.TEXT, Modality.IMAGE],
+      },
+    });
+
+    let generatedText = "";
+    let imageUrl = "";
+
+    for (const part of response.candidates[0].content.parts) {
+      if (part.text) {
+        generatedText = part.text;
+      } else if (part.inlineData) {
+        const imageData = part.inlineData.data;
+        const buffer = Buffer.from(imageData, "base64");
+        
+        // Generate unique filename
+        const filename = `gemini-generated-${Date.now()}.png`;
+        
+        // Upload to Cloudinary
+        const cloudinaryResponse = await uploadToCloudinary(buffer, filename);
+        imageUrl = cloudinaryResponse.secure_url;
+      }
+    }
+
+    return {
+      text: generatedText,
+      imageUrl: imageUrl,
+      success: true
+    };
+  } catch (error: any) {
+    console.error("Image generation error:", error);
+    throw new Error(`Failed to generate image: ${error.message}`);
+  }
+};
+
 
 // Mock weather data function
 const getMockWeather = (location: string) => {
@@ -73,6 +156,7 @@ export async function POST(request: NextRequest) {
     const result = streamText({
       model: google("models/gemini-2.0-flash-exp"),
       messages: messages,
+      temperature: 1,
       system: `You are a helpful AI assistant. You can help with various tasks including:
       - Answering general questions of any response length  
       - Getting weather information
@@ -108,7 +192,39 @@ export async function POST(request: NextRequest) {
             };
           },
         }),
-
+        generateImage: tool({
+          description:
+            "Generate an image based on a text prompt using Google's Gemini AI. " +
+            "The generated image will be automatically uploaded to Cloudinary and return a <t3-image>url</t3-image> tag " +
+            "Use this when users ask to create, generate, or make images and always return the <t3-image> tag with the url in it.",
+          parameters: z.object({
+            prompt: z
+              .string()
+              .describe("The detailed text prompt describing the image to generate"),
+          }),
+          execute: async ({ prompt }) => {
+            try {
+              const result = await generateImage(prompt);
+              console.log(result);
+              return {
+                prompt: prompt,
+                success: result.success,
+                text: result.text,
+                imageUrl: `<t3-image>${result.imageUrl}</t3-image>`,
+                message: "Image generated successfully and uploaded to Cloudinary"
+              };
+            } catch (error: any) {
+              console.error("Image generation tool error:", error);
+              return {
+                prompt: prompt,
+                success: false,
+                error: error.message,
+                imageUrl: null,
+                message: "Failed to generate image"
+              };
+            }
+          },
+        }),
         searchWeb: tool({
           description:
             "Search the web for current information, news, facts, or any topic that requires up-to-date data. " +

@@ -142,12 +142,12 @@ export const createMessage = async ({
 
     const countMessages = await getMessageUsage();
 
-    if (countMessages.data && countMessages.data >= 20) {
-      return {
-        data: null,
-        error: "You have reached the maximum number of messages for today",
-      };
-    }
+    // if (countMessages.data && countMessages.data >= 20) {
+    //   return {
+    //     data: null,
+    //     error: "You have reached the maximum number of messages for today",
+    //   };
+    // }
 
     const thread = await Thread.findOne({
       threadId: threadId,

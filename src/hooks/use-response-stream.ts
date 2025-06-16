@@ -3,8 +3,18 @@ import chatStore from "@/stores/chat.store";
 import { createMessage } from "@/action/message.action";
 
 interface Message {
+  _id?: string;
+  threadId: string;
+  userId?: string;
   userQuery: string;
-  aiResponse: Array<{ content: string }>;
+  attachment?: string;
+  isSearch?: boolean;
+  aiResponse: Array<{ content: string; model: string }>;
+  createdAt?: Date;
+  updatedAt?: Date;
+  // Optimistic state indicators
+  isPending?: boolean;
+  tempId?: string;
 }
 
 interface UseStreamResponseReturn {
@@ -36,21 +46,42 @@ export function useStreamResponse(): UseStreamResponseReturn {
       attachmentUrl?: string;
       resetAttachment?: () => void;
     }) => {
-      const { query, messages, setMessages, setResponse, setQuery } =
+      const { query, messages, setMessages, setQuery } =
         chatStore.getState();
 
       if (!query?.trim() || isLoading) return;
       const trimmedQuery = query.trim();
       const attachment = attachmentUrl ? attachmentUrl : "";
-      resetAttachment && resetAttachment();
+      
+      if (resetAttachment) {
+        resetAttachment();
+      }
+      
       setIsLoading(true);
-      setResponse("");
       setError(null);
+
+      // Create optimistic message with temporary ID
+      const tempId = `temp_${Date.now()}_${Math.random()}`;
+      const optimisticMessage: Message = {
+        tempId,
+        threadId: chatid,
+        userId: "current-user", // Replace with actual user ID from your auth
+        userQuery: trimmedQuery,
+        attachment: attachment || undefined,
+        isSearch: false,
+        aiResponse: [{ content: "", model: "Gemini 2.5 Flash" }],
+        isPending: true,
+        createdAt: new Date(),
+      };
+
+      // Add optimistic message immediately
+      const currentMessages = messages && Array.isArray(messages) ? messages : [];
+      setMessages([...currentMessages, optimisticMessage]);
 
       try {
         const apiMessages =
-          messages && Array.isArray(messages) && messages.length > 0
-            ? messages.flatMap((msg: Message) => [
+          currentMessages && currentMessages.length > 0
+            ? currentMessages.flatMap((msg: Message) => [
                 {
                   role: "user" as const,
                   content: [{ type: "text", text: msg.userQuery }],
@@ -106,30 +137,60 @@ export function useStreamResponse(): UseStreamResponseReturn {
 
           const chunk = decoder.decode(value, { stream: true });
           assistantResponse += chunk;
-          chatStore.getState().setResponse(assistantResponse);
+          
+          // Update the optimistic message with streaming response
+          const currentState = chatStore.getState();
+          const stateMessages = currentState.messages || [];
+          const updatedMessages = stateMessages.map((msg: Message) => 
+            msg.tempId === tempId 
+              ? { ...msg, aiResponse: [{ content: assistantResponse, model: "Gemini 2.5 Flash" }] }
+              : msg
+          );
+          currentState.setMessages(updatedMessages);
         }
 
-        console.log(chatid);
+        console.log(chatid, "hello world");
+        
+        // Save message to database
         const savedMessage = await createMessage({
           threadId: chatid,
-          userQuery: query,
+          userQuery: trimmedQuery, // Use trimmedQuery instead of query
           attachment: attachment,
           aiResponse: [
             { content: assistantResponse, model: "Gemini 2.5 Flash" },
           ],
         });
-        console.log(savedMessage);
-        const currentMessages =
-          messages && Array.isArray(messages) ? messages : [];
-        console.log([...currentMessages, { ...savedMessage.data }]);
-        chatStore
-          .getState()
-          .setMessages([...currentMessages, { ...savedMessage.data }]);
-        chatStore.getState().setResponse("");
+
+        if (savedMessage.error) {
+          console.log(savedMessage, "responseMsg");
+          throw new Error(savedMessage.error);
+        }
+
+        // Replace optimistic message with saved message
+        const finalState = chatStore.getState();
+        const stateMessagesForFinal = finalState.messages || [];
+        const finalMessages = stateMessagesForFinal.map((msg: Message) => 
+          msg.tempId === tempId 
+            ? { ...savedMessage.data, isPending: false }
+            : msg
+        );
+        finalState.setMessages(finalMessages);
+        setIsLoading(false);
+
       } catch (err) {
         console.error("Streaming error:", err);
+        
+        // Remove optimistic message on error
+        const errorState = chatStore.getState();
+        const errorStateMessages = errorState.messages || [];
+        const messagesWithoutOptimistic = errorStateMessages.filter(
+          (msg: Message) => msg.tempId !== tempId
+        );
+        errorState.setMessages(messagesWithoutOptimistic);
+        
         setError(err instanceof Error ? err.message : "An error occurred");
       } finally {
+        setQuery("");
         setIsLoading(false);
       }
     },
@@ -137,9 +198,8 @@ export function useStreamResponse(): UseStreamResponseReturn {
   );
 
   const clearMessages = useCallback(() => {
-    const { setMessages, setResponse, setQuery } = chatStore.getState();
+    const { setMessages, setQuery } = chatStore.getState();
     setMessages([]);
-    setResponse("");
     setQuery("");
     setError(null);
   }, []);

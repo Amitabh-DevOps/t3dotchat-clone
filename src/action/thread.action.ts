@@ -145,7 +145,7 @@ export const createThread = async ({
   threadId: string;
 }) => {
   const session = await auth();
-
+console.log(threadId, title);
   if (!session?.user) {
     return {
       data: null,
@@ -158,12 +158,12 @@ export const createThread = async ({
 
     const countMessages = await getMessageUsage();
 
-    if (countMessages.data && countMessages.data >= 20) {
-      return {
-        data: null,
-        error: "You have reached the maximum number of messages for today",
-      };
-    }
+    // if (countMessages.data && countMessages.data >= 20) {
+    //   return {
+    //     data: null,
+    //     error: "You have reached the maximum number of messages for today",
+    //   };
+    // }
     const thread = await Thread.create({
       threadId: threadId,
       userId: session.user.id,

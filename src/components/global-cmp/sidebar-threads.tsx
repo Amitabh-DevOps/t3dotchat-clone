@@ -216,7 +216,7 @@ const SidebarThreads = () => {
           <SidebarMenuItem className="hover:bg-sidebar-accent overflow-hidden flex items-center relative px-0 group/link-item rounded-lg">
             <Link 
               className={`p-2 px-3 ${showBranchIcon ? 'truncate flex items-center gap-2' : 'block'}`}
-              href={`/thread/${thread.threadId}`}
+              href={`/chat/${thread.threadId}`}
             >
               {showBranchIcon && <BranchOffIcon />}
               <p className={showBranchIcon ? 'flex-1 truncate' : ''}>

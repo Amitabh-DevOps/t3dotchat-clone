@@ -48,7 +48,7 @@ function ChatInput({
   const router = useRouter();
   const { isLoading, error, sendMessage, clearMessages } = useStreamResponse();
   const [input, setInput] = useState("");
-  const { setQuery } = chatStore();
+  const { setQuery, setMessages } = chatStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Cloudinary upload hook
@@ -126,6 +126,7 @@ function ChatInput({
     const generatedId = generateUUID();
     if (!params.chatid) {
       await createThread({ title: "New Thread", threadId: generatedId });
+      setMessages([]);
       router.push(`/chat/${generatedId}`);
     }
     await sendMessage({

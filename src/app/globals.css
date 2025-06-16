@@ -515,7 +515,7 @@ body {
     font-feature-settings: normal;
     font-variation-settings: normal;
     color: var(--color-foreground);
-    background-color: hsl(var(--secondary) / 0.5);
+    background-color: hsl(var(--secondary) / 0.5) ;
     border-radius: calc(var(--radius) - 2px);
     padding: 0.25em 0.5em;
   }
@@ -525,22 +525,25 @@ body {
 }
 
 .mark-response pre {
-  background-color: var(--color-background);
+  background-color: var(--color-background) !important;
   padding: 1rem;
   font-size: 0.9em;
   code,
   kbd,
   pre,
   samp {
-    font-family: var(--font-berkeley-mono);
+    font-family: var(--font-berkeley-mono) !important;
     font-feature-settings: normal;
     font-variation-settings: normal;
     color: var(--color-foreground);
   }
-  code {
-    background-color: transparent !important;
-    padding: 0 !important;
-  }
+
+}
+
+.mark-response pre,code {
+  background-color: transparent !important;
+  font-family: var(--font-berkeley-mono) !important;
+  padding: 0 !important;
 }
 
 span {
