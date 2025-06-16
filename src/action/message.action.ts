@@ -178,7 +178,13 @@ export const createMessage = async ({
   }
 };
 
-export const regenerateAnotherResponse = async ({ messageId, aiResponse }: { messageId: string, aiResponse: { content: string; model: string } }) => {
+export const regenerateAnotherResponse = async ({
+  messageId,
+  aiResponse,
+}: {
+  messageId: string;
+  aiResponse: { content: string; model: string };
+}) => {
   const session = await auth();
   if (!session?.user) {
     return {
@@ -215,4 +221,39 @@ export const regenerateAnotherResponse = async ({ messageId, aiResponse }: { mes
       error: error.message || "Failed to regenerate response",
     };
   }
-}
+};
+
+export const getAttachmentMessage = async () => {
+  const session = await auth();
+  if (!session?.user) {
+    return {
+      data: null,
+      error: "Unauthorized",
+    };
+  }
+  try {
+    await connectDB();
+
+    const messages = await Message.find({
+      userId: session.user.id,
+      attachment: { $ne: null },
+    });
+
+    if (!messages || messages.length === 0) {
+      return {
+        data: null,
+        error: "No attachment messages found",
+      };
+    }
+
+    return {
+      data: serializeData(messages),
+      error: null,
+    };
+  } catch (error) {
+    return {
+      data: null,
+      error: error,
+    };
+  }
+};

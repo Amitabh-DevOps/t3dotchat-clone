@@ -231,7 +231,7 @@ export const deleteThread = async ({ threadId }: { threadId: string }) => {
   }
 };
 
-export const searchThread = async ({ query }: { query: string }) => {
+export const searchThread = async ({ query }: { query?: string }) => {
   const session = await auth();
 
   if (!session?.user) {
@@ -249,7 +249,7 @@ export const searchThread = async ({ query }: { query: string }) => {
         title: { $regex: query, $options: "i" },
       })
         .sort({ createdAt: -1 })
-        .select("threadId title isPinned");
+        .select("threadId title isPinned createdAt");
       return {
         data: serializeData(threads),
         error: null,
@@ -260,7 +260,7 @@ export const searchThread = async ({ query }: { query: string }) => {
       userId: session.user.id,
     })
       .sort({ createdAt: -1 })
-      .select("threadId title isPinned");
+      .select("threadId title isPinned createdAt");
     return {
       data: serializeData(threads),
       error: null,
@@ -272,3 +272,40 @@ export const searchThread = async ({ query }: { query: string }) => {
     };
   }
 };
+
+export const bulkDeleteThread = async ({ threadIds }: { threadIds: string[] }) => {
+  const session = await auth();
+
+  if (!session?.user) {
+    return {
+      data: null,
+      error: "Unauthorized",
+    };
+  }
+  try {
+    await connectDB();
+
+    const threads = await Thread.find({userId: session.user.id, threadId: {$in: threadIds}});
+
+    if (threads.length !== threadIds.length) {
+      return {
+        data: null,
+        error: "Some threads not found",
+      };
+    }
+    
+    await Thread.deleteMany({userId: session.user.id, threadId: {$in: threadIds}});
+
+    await Message.deleteMany({threadId: {$in: threadIds}});
+
+    return {
+      data: serializeData(threads),
+      error: null,
+    };
+  } catch (error: any) {
+    return {
+      data: null,
+      error: error.message,
+    };
+  }
+}

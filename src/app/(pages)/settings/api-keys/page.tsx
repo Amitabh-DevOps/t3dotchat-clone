@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -15,10 +15,47 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Plus } from 'lucide-react'
+import { getUser } from '@/action/user.action'
+import { updateOpenRouterApiKey } from '@/action/user.action'
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from 'sonner'
 
 const page = () => {
   const [open, setOpen] = useState(false)
   const [apiKey, setApiKey] = useState("")
+  const queryClient = useQueryClient()
+
+  const { data: user, isLoading } = useQuery({
+    queryKey: ['user'],
+    queryFn: () => getUser(),
+  })
+
+  // Set the API key when user data is loaded
+  useEffect(() => {
+    if (user?.data?.openRouterApiKey) {
+      setApiKey(user.data.openRouterApiKey)
+    }
+  }, [user?.data?.openRouterApiKey])
+
+  const { mutate: updateOpenRouterApiKeyMutation } = useMutation({
+    mutationFn: (apiKey: string) => updateOpenRouterApiKey(apiKey),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user'] })
+      toast.success('API key updated successfully')
+      setOpen(false)
+    },
+    onError: () => {
+      toast.error('Failed to update API key')
+    },
+  })
+
+  const handleSubmit = () => {
+    if (apiKey.trim()) {
+      updateOpenRouterApiKeyMutation(apiKey)
+    } else {
+      toast.error('Please enter a valid API key')
+    }
+  }
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -86,11 +123,7 @@ const page = () => {
                   </Button>
                   <Button 
                     type="submit"
-                    onClick={() => {
-                      // Add functionality here later
-                      setOpen(false)
-                      setApiKey("")
-                    }}
+                    onClick={handleSubmit}
                   >
                     Add API Key
                   </Button>

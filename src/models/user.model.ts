@@ -39,6 +39,10 @@ const UserSchema = new Schema<userType>(
         type: [String],
       },
     },
+    openRouterApiKey: {
+      type: String,
+    },
+    // apiKeys will implement later
     apiKeys: [
       {
         model: {

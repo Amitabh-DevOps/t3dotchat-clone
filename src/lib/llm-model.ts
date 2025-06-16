@@ -1,6 +1,6 @@
 export const llmModels = [
     {
-        id: "#001", // if favorite for 1 index model then in schema it store as #001[0]
+        id: "#001", // if we favorite for 1 index model then in schema it store as #001[0]
         provider: "Google",
         apiKey: process.env.GEMINI_API_KEY,
         models: [
