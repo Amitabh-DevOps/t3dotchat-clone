@@ -13,7 +13,7 @@ const getMockWeather = (location: string) => {
     default: { temperature: 70, condition: "Partly Cloudy", humidity: 65 },
   };
 
-  return mockData[location] || mockData.default;
+  return mockData[location as keyof typeof mockData] || mockData.default;
 };
 
 export async function generateLoveDefinition(prompt: string) {
