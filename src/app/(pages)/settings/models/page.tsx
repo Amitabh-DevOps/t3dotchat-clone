@@ -1,10 +1,13 @@
 "use client"
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Eye, FileText, Search, Zap, ExternalLink } from 'lucide-react'
+import { llmModels } from '@/lib/llm-model'
+import { getUser, updateModels } from '@/action/user.action'
+import { toast } from 'sonner' // assuming you're using sonner for toasts
 
 interface ModelBadge {
   icon: React.ReactNode
@@ -20,6 +23,7 @@ interface ModelCardProps {
   onToggle: (enabled: boolean) => void
   hasSearchUrl?: boolean
   showMore?: boolean
+  modelKey: string
 }
 
 const ModelCard: React.FC<ModelCardProps> = ({
@@ -29,7 +33,8 @@ const ModelCard: React.FC<ModelCardProps> = ({
   enabled,
   onToggle,
   hasSearchUrl = false,
-  showMore = false
+  showMore = false,
+  modelKey
 }) => {
   return (
     <Card className="border border-border/50 bg-card hover:bg-card/80 transition-colors">
@@ -93,57 +98,227 @@ const ModelCard: React.FC<ModelCardProps> = ({
   )
 }
 
-const page = () => {
-  const [filters, setFilters] = React.useState({
-    gemini20Flash: true,
-    gemini20FlashLite: true,
-  })
+// Helper function to create model ID
+const createModelId = (providerId: string, modelIndex: number) => {
+  return `${providerId}[${modelIndex}]`
+}
 
-  const handleToggle = (modelKey: string) => (enabled: boolean) => {
+// Helper function to parse model ID
+const parseModelId = (modelId: string) => {
+  const match = modelId.match(/^(#\d+)\[(\d+)\]$/)
+  if (match) {
+    return { providerId: match[1], modelIndex: parseInt(match[2]) }
+  }
+  return null
+}
+
+const page = () => {
+  const [filters, setFilters] = useState<Record<string, boolean>>({})
+  const [loading, setLoading] = useState(true)
+  const [updating, setUpdating] = useState(false)
+
+  // Initialize state from user data and llmModels
+  useEffect(() => {
+    const initializeState = async () => {
+      try {
+        const { data: user, error } = await getUser()
+        
+        if (error) {
+          toast.error(error)
+          return
+        }
+
+        console.log("user", user)
+
+        const initialFilters: Record<string, boolean> = {}
+        
+        // Get user's selected models
+        const userSelectedModels = user?.models?.selected || []
+
+        // Initialize all models with their states
+        llmModels.forEach((provider, providerIndex) => {
+          provider.models.forEach((model, modelIndex) => {
+            const modelId = createModelId(provider.id, modelIndex)
+            
+            // Check if this model is selected by user
+            initialFilters[model.key] = userSelectedModels.includes(modelId)
+          })
+        })
+
+        console.log("initialFilters", initialFilters)
+
+        setFilters(initialFilters)
+      } catch (error) {
+        console.error('Error initializing state:', error)
+        toast.error('Failed to load user preferences')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    initializeState()
+  }, [])
+
+  const handleToggle = (modelKey: string) => async (enabled: boolean) => {
     setFilters(prev => ({ ...prev, [modelKey]: enabled }))
+    await updateUserModels(modelKey, enabled)
   }
 
-  const models = [
-    {
-      name: "Gemini 2.0 Flash",
-      description: "Google's flagship model, known for speed and accuracy (and also web search!).",
+  const updateUserModels = async (modelKey: string, value: boolean) => {
+    if (updating) return
+    
+    setUpdating(true)
+    try {
+      // Find the model in llmModels to get its ID
+      let modelId = ''
+      
+      llmModels.forEach((provider, providerIndex) => {
+        provider.models.forEach((model, modelIndex) => {
+          if (model.key === modelKey) {
+            modelId = createModelId(provider.id, modelIndex)
+          }
+        })
+      })
+
+      if (!modelId) {
+        throw new Error('Model not found')
+      }
+
+      // Get current selected models
+      const currentSelected = Object.entries(filters)
+        .filter(([key, selected]) => selected)
+        .map(([key]) => {
+          // Find model ID for this key
+          let id = ''
+          llmModels.forEach((provider, providerIndex) => {
+            provider.models.forEach((model, modelIndex) => {
+              if (model.key === key) {
+                id = createModelId(provider.id, modelIndex)
+              }
+            })
+          })
+          return id
+        })
+        .filter(Boolean)
+
+      // Update the selected array
+      let newSelected = [...currentSelected]
+
+      if (value && !newSelected.includes(modelId)) {
+        newSelected.push(modelId)
+      } else if (!value) {
+        newSelected = newSelected.filter(id => id !== modelId)
+      }
+
+      const { error } = await updateModels({ selected: newSelected })
+      
+      if (error) {
+        throw new Error(error)
+      }
+
+      toast.success('Model selection updated successfully')
+    } catch (error) {
+      console.error('Error updating models:', error)
+      toast.error('Failed to update model selection')
+      
+      // Revert the UI state on error
+      setFilters(prev => ({ ...prev, [modelKey]: !value }))
+    } finally {
+      setUpdating(false)
+    }
+  }
+
+  // Map the imported llmModels data to the component format
+  const models = llmModels.flatMap(provider => 
+    provider.models.map(model => ({
+      name: model.name,
+      description: model.description,
       badges: [
         { icon: <Eye className="w-3 h-3" />, label: "Vision" },
         { icon: <FileText className="w-3 h-3" />, label: "PDFs" },
         { icon: <Search className="w-3 h-3" />, label: "Search" },
       ],
-      enabled: filters.gemini20Flash,
-      onToggle: handleToggle('gemini20Flash'),
+      enabled: filters[model.key] || false,
+      onToggle: handleToggle(model.key),
       hasSearchUrl: true,
       showMore: true,
-    },
-    {
-      name: "Gemini 2.0 Flash Lite ⚡",
-      description: "Similar to 2.0 Flash, but even faster.",
-      badges: [
-        { icon: <Zap className="w-3 h-3" />, label: "Fast", variant: 'outline' as const },
-        { icon: <Eye className="w-3 h-3" />, label: "Vision" },
-        { icon: <FileText className="w-3 h-3" />, label: "PDFs" },
-      ],
-      enabled: filters.gemini20FlashLite,
-      onToggle: handleToggle('gemini20FlashLite'),
-      hasSearchUrl: true,
-      showMore: true,
-    }
-  ]
+      modelKey: model.key,
+    }))
+  )
 
-  const handleSelectRecommended = () => {
-    setFilters({
-      gemini20Flash: true,
-      gemini20FlashLite: true,
-    })
+  const handleSelectRecommended = async () => {
+    if (updating) return
+    
+    setUpdating(true)
+    try {
+      const recommendedFilters: Record<string, boolean> = {}
+      const allModelIds: string[] = []
+      
+      llmModels.forEach((provider, providerIndex) => {
+        provider.models.forEach((model, modelIndex) => {
+          recommendedFilters[model.key] = true
+          allModelIds.push(createModelId(provider.id, modelIndex))
+        })
+      })
+      
+      setFilters(recommendedFilters)
+      
+      const { error } = await updateModels({ selected: allModelIds })
+      if (error) {
+        throw new Error(error)
+      }
+      
+      toast.success('All recommended models selected')
+    } catch (error) {
+      console.error('Error selecting recommended models:', error)
+      toast.error('Failed to select recommended models')
+    } finally {
+      setUpdating(false)
+    }
   }
 
-  const handleUnselectAll = () => {
-    setFilters({
-      gemini20Flash: false,
-      gemini20FlashLite: false,
-    })
+  const handleUnselectAll = async () => {
+    if (updating) return
+    
+    setUpdating(true)
+    try {
+      const emptyFilters: Record<string, boolean> = {}
+      llmModels.forEach(provider => {
+        provider.models.forEach(model => {
+          emptyFilters[model.key] = false
+        })
+      })
+      
+      setFilters(emptyFilters)
+      
+      const { error } = await updateModels({ selected: [] })
+      if (error) {
+        throw new Error(error)
+      }
+      
+      toast.success('All models unselected')
+    } catch (error) {
+      console.error('Error unselecting models:', error)
+      toast.error('Failed to unselect models')
+    } finally {
+      setUpdating(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="p-6 max-w-4xl mx-auto space-y-6">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/3 mb-2"></div>
+          <div className="h-4 bg-gray-200 rounded w-2/3 mb-6"></div>
+          <div className="space-y-4">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-32 bg-gray-200 rounded"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -161,30 +336,32 @@ const page = () => {
         <Button variant="outline" size="sm" className="text-sm">
           Filter by features
         </Button>
-       <div>
-       <Button 
-          variant="outline" 
-          size="sm" 
-          className="text-sm"
-          onClick={handleSelectRecommended}
-        >
-          Select Recommended Models
-        </Button>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="text-sm text-muted-foreground hover:text-foreground"
-          onClick={handleUnselectAll}
-        >
-          Unselect All
-        </Button>
-       </div>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="text-sm"
+            onClick={handleSelectRecommended}
+            disabled={updating}
+          >
+            {updating ? 'Updating...' : 'Select Recommended Models'}
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="text-sm text-muted-foreground hover:text-foreground"
+            onClick={handleUnselectAll}
+            disabled={updating}
+          >
+            {updating ? 'Updating...' : 'Unselect All'}
+          </Button>
+        </div>
       </div>
 
       {/* Models List */}
       <div className="space-y-4 h-96 overflow-y-auto">
         {models.map((model, index) => (
-          <ModelCard key={index} {...model} />
+          <ModelCard key={model.modelKey} {...model} />
         ))}
       </div>
     </div>

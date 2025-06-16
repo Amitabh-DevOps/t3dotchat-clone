@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import QueryProvider from "@/components/providers/query-provider";
+import { Toaster } from "sonner";
 
 const proximaVara = localFont({
   src: "../assets/fonts/proxima_vara.woff2",
@@ -31,7 +32,12 @@ export default function RootLayout({
       <body
         className={`${proximaVara.variable} ${berkeleyMono.variable} selection:text-white selection:bg-primary font-proxima-vara antialiased min-h-screen`}
       >
-        <ThemeProvider attribute="class"><QueryProvider> {children}</QueryProvider></ThemeProvider>
+        <ThemeProvider attribute="class">
+          <QueryProvider>
+            {children}
+            <Toaster position="bottom-right" />
+          </QueryProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

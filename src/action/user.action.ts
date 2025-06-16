@@ -38,6 +38,158 @@ export const getUser = async () => {
   }
 };
 
+export const updateT3ChatInfo = async ({
+  username,
+  profession,
+  skills,
+  additionalInfo,
+}: {
+  username?: string;
+  profession?: string;
+  skills?: string[];
+  additionalInfo?: string;
+}) => {
+  const session = await auth();
+
+  if (!session?.user) {
+    return {
+      data: null,
+      error: "Unauthorized",
+    };
+  }
+
+  try {
+    await connectDB();
+
+    const user = await User.findById(session.user.id);
+
+    if (!user) {
+      return {
+        data: null,
+        error: "User not found",
+      };
+    }
+
+    // Initialize t3ChatInfo if it doesn't exist
+    if (!user.t3ChatInfo) {
+      user.t3ChatInfo = {};
+    }
+
+    // Update only provided fields
+    if (username !== undefined) {
+      user.t3ChatInfo.username = username;
+    }
+    if (profession !== undefined) {
+      user.t3ChatInfo.profession = profession;
+    }
+    if (skills !== undefined) {
+      user.t3ChatInfo.skills = skills;
+    }
+    if (additionalInfo !== undefined) {
+      user.t3ChatInfo.additionalInfo = additionalInfo;
+    }
+
+    await user.save();
+
+    return {
+      data: serializeData(user.t3ChatInfo),
+      error: null,
+    };
+  } catch (error: any) {
+    return {
+      data: null,
+      error: error.message,
+    };
+  }
+};
+
+export const updateOpenRouterApiKey = async (key: string) => {
+  const session = await auth();
+
+  if (!session?.user) {
+    return {
+      data: null,
+      error: "Unauthorized",
+    };
+  }
+
+  try {
+    await connectDB();
+
+    const user = await User.findById(session.user.id);
+
+    if (!user) {
+      return {
+        data: null,
+        error: "User not found",
+      };
+    }
+
+    user.openRouterApiKey = key;
+
+    await user.save();
+
+    return {
+      data: serializeData(user),
+      error: null,
+    };
+  } catch (error: any) {
+    return {
+      data: null,
+      error: error.message,
+    };
+  }
+}
+
+export const updateModels = async ({
+  selected,
+  favorite,
+}: {
+  selected?: string[];
+  favorite?: string[];
+}) => {
+  const session = await auth();
+
+  if (!session?.user) {
+    return {
+      data: null,
+      error: "Unauthorized",
+    };
+  }
+  try {
+    await connectDB();
+
+    const user = await User.findById(session.user.id);
+
+    if (!user) {
+      return {
+        data: null,
+        error: "User not found",
+      };
+    }
+
+    if (selected !== undefined) {
+      user.models.selected = selected;
+    }
+    if (favorite !== undefined) {
+      user.models.favorite = favorite;
+    }
+
+    await user.save();
+
+    return {
+      data: serializeData(user.models),
+      error: null,
+    };
+  } catch (error: any) {
+    return {
+      data: null,
+      error: error.message,
+    };
+  }
+}
+
+// this action will implement later
 export const addApiKey = async ({
   model,
   key,
@@ -93,6 +245,7 @@ export const addApiKey = async ({
   }
 };
 
+// this action will implement later
 export const updateApiKey = async ({
   _id,
   key,
@@ -150,6 +303,7 @@ export const updateApiKey = async ({
   }
 };
 
+// this action will implement later
 export const deleteApiKey = async ({ _id }: { _id: string }) => {
   const session = await auth();
 
@@ -188,71 +342,6 @@ export const deleteApiKey = async ({ _id }: { _id: string }) => {
 
     return {
       data: serializeData(user.apiKeys),
-      error: null,
-    };
-  } catch (error: any) {
-    return {
-      data: null,
-      error: error.message,
-    };
-  }
-};
-
-export const updateT3ChatInfo = async ({
-  username,
-  profession,
-  skills,
-  additionalInfo,
-}: {
-  username?: string;
-  profession?: string;
-  skills?: string[];
-  additionalInfo?: string;
-}) => {
-  const session = await auth();
-
-  if (!session?.user) {
-    return {
-      data: null,
-      error: "Unauthorized",
-    };
-  }
-
-  try {
-    await connectDB();
-
-    const user = await User.findById(session.user.id);
-
-    if (!user) {
-      return {
-        data: null,
-        error: "User not found",
-      };
-    }
-
-    // Initialize t3ChatInfo if it doesn't exist
-    if (!user.t3ChatInfo) {
-      user.t3ChatInfo = {};
-    }
-
-    // Update only provided fields
-    if (username !== undefined) {
-      user.t3ChatInfo.username = username;
-    }
-    if (profession !== undefined) {
-      user.t3ChatInfo.profession = profession;
-    }
-    if (skills !== undefined) {
-      user.t3ChatInfo.skills = skills;
-    }
-    if (additionalInfo !== undefined) {
-      user.t3ChatInfo.additionalInfo = additionalInfo;
-    }
-
-    await user.save();
-
-    return {
-      data: serializeData(user.t3ChatInfo),
       error: null,
     };
   } catch (error: any) {
