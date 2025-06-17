@@ -12,7 +12,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import VisualOptions from '@/components/settings/VisualOptions'
 
 const suggestedTraits = [
-  'friendly', 'witty', 'concise', 'curious', 'empathetic', 'creative', 'patient'
+  'friendly', 'witty', 'concise', 'curious', 'empathetic'
 ]
 
 export default function CustomizationPage() {
@@ -149,24 +149,15 @@ export default function CustomizationPage() {
     )
   }
 
-  if (error) {
-    return (
-      <div className="p-6 space-y-8">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-red-400">Error loading user data: {error.message}</div>
-        </div>
-      </div>
-    )
-  }
 
   return (
     <div className="p-6 space-y-8">
-      <h1 className="text-3xl font-bold text-white mb-8">Customize T3 Chat</h1>
+      <h1 className="text-2xl font-bold text-foreground mb-8">Customize T3 Chat</h1>
       
       <div className="space-y-6">
         {/* Name Field */}
         <div className="space-y-2">
-          <Label htmlFor="name" className="text-white text-base">
+          <Label htmlFor="name" className="text-base">
             What should T3 Chat call you?
           </Label>
           <div className="relative">
@@ -185,7 +176,7 @@ export default function CustomizationPage() {
 
         {/* Occupation Field */}
         <div className="space-y-2">
-          <Label htmlFor="occupation" className="text-white text-base">
+          <Label htmlFor="occupation" className="text-base">
             What do you do?
           </Label>
           <div className="relative">
@@ -204,7 +195,7 @@ export default function CustomizationPage() {
 
         {/* Traits Field */}
         <div className="space-y-3">
-          <Label className="text-white text-base">
+          <Label className="text-base">
             What traits should T3 Chat have?{' '}
             <span className="text-sm text-muted-foreground font-normal">
               (up to 50, max 100 chars each)
@@ -217,12 +208,12 @@ export default function CustomizationPage() {
               <Badge 
                 key={index} 
                 variant="secondary" 
-                className="flex items-center gap-1 px-3 py-1 bg-zinc-700 text-white hover:bg-zinc-600"
+                className="flex items-center gap-1 px-3 py-1"
               >
                 {trait}
                 <button
                   onClick={() => removeTrait(trait)}
-                  className="ml-1 hover:bg-zinc-600 rounded-full p-0.5"
+                  className="ml-1 dark:hover:bg-zinc-600 hover:bg-white/20 rounded-full p-0.5"
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -253,7 +244,7 @@ export default function CustomizationPage() {
                 size="sm"
                 onClick={() => addSuggestedTrait(trait)}
                 disabled={traits.includes(trait) || traits.length >= 50}
-                className="text-sm border-zinc-600 text-zinc-300 hover:bg-zinc-700 hover:text-white disabled:opacity-50"
+                className="text-sm disabled:opacity-50"
               >
                 {trait}
                 <span className="ml-1 text-lg">+</span>
@@ -264,7 +255,7 @@ export default function CustomizationPage() {
 
         {/* Additional Info Field */}
         <div className="space-y-2">
-          <Label htmlFor="additional" className="text-white text-base">
+          <Label htmlFor="additional" className="text-base">
             Anything else T3 Chat should know about you?
           </Label>
           <div className="relative">
@@ -286,7 +277,6 @@ export default function CustomizationPage() {
       <div className="flex gap-4 pt-4">
         <Button 
           variant="outline" 
-          className="border-zinc-600 text-zinc-300 hover:bg-zinc-700 hover:text-white"
         >
           Load Legacy Data
         </Button>
@@ -296,7 +286,7 @@ export default function CustomizationPage() {
           disabled={!hasChanges() || updateMutation.isPending}
           onClick={handleSave}
         >
-          {updateMutation.isPending ? 'Saving...' : 'Save Preferences'}
+          Save Preferences
         </Button>
       </div>
 

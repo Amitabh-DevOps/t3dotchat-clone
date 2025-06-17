@@ -17,17 +17,17 @@ const TabNavigation = () => {
   ];
 
   return (
-    <div className="grid grid-cols-7 gap-1 mb-6">
+    <div className="flex h-fit rounded-md w-fit bg-secondary text-secondary-foreground gap-1 py-1 px-2 mb-6">
       {tabs.map((tab) => {
         const isActive = pathname === tab.href;
         return (
           <Link key={tab.name} href={tab.href}>
             <Button
               variant={isActive ? "secondary" : "ghost"}
-              className={`w-full px-4 py-2 text-sm ${
+              className={`w-full px-4 py-2 text-sm rounded-md ${
                 isActive
-                  ? "bg-zinc-800 text-white"
-                  : "text-zinc-400 hover:text-white hover:bg-zinc-800"
+                  ? "dark:!bg-black/60 !bg-white/60"
+                  : "dark:hover:!bg-black/20 hover:!bg-white/20"
               }`}
             >
               {tab.name}

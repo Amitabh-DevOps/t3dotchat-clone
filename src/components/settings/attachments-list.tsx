@@ -16,7 +16,7 @@ const AttachmentsList = ({ data }: AttachmentsListProps) => {
     return (
       <div className="space-y-6">
         <div className="space-y-2">
-          <h2 className="text-2xl font-semibold text-foreground">
+          <h2 className="text-2xl font-bold text-foreground">
             Attachments
           </h2>
           <p className="text-sm text-muted-foreground">
