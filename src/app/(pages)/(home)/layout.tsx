@@ -32,6 +32,8 @@ import BranchOffIcon from "../../../../public/icons/branch-off";
 import { auth } from "@/auth";
 import ChatInput from "@/components/chat-cmp/chat-input";
 import SearchThreads from "@/components/chat-cmp/search-threads";
+import { getUser } from "@/action/user.action";
+import { redirect } from "next/navigation";
 
 function ChatLayoutContent({ children }: { children: React.ReactNode }) {
   return (
@@ -95,8 +97,13 @@ export default async function ChatLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
-
+  const [session, user] = await Promise.all([auth(), getUser()]);
+  // if (!session?.user) {
+  //   redirect("/auth");
+  // }
+  // // if (!user?.data?.openRouterApiKey || user?.data?.openRouterApiKey == "") {
+  // //   redirect("/connect");
+  // // }
   return (
     <>
       <SidebarProvider>
