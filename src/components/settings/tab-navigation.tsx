@@ -11,9 +11,9 @@ const TabNavigation = () => {
     { name: "Customization", href: "/settings/customization" },
     { name: "History & Sync", href: "/settings/history" },
     { name: "Models", href: "/settings/models" },
-    { name: "API Keys", href: "/settings/api-keys" },
+    // { name: "API Keys", href: "/settings/api-keys" },
     { name: "Attachments", href: "/settings/attachments" },
-    { name: "Contact Us", href: "/settings/contact" },
+    // { name: "Contact Us", href: "/settings/contact" },
   ];
 
   return (
