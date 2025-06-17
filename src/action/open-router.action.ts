@@ -29,14 +29,12 @@ export const connectToOpenRouter = async (code: string) => {
     if (response.ok) {
       const { key } = await response.json();
       await updateOpenRouterApiKey(key);
-    } else {
-      throw new Error("Authentication failed");
     }
   } catch (error) {
     console.log(error);
     throw error;
   }
-  redirect("/test");
+  redirect("/");
 };
 
 export const getCredit = async () => {
