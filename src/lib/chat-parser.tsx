@@ -60,7 +60,7 @@ export const processSpecificT3Tags = async (
     "t3-image": (element: any) => {
       const imageUrl = element.textContent.trim();
       const alt = element.getAttribute("alt") || "Generated image";
-      return `<img src="${imageUrl}" class="w-[400px] object-contain aspect-[1/1] h-auto" alt="${alt}" />`;
+      return `<img src="${imageUrl}" class="w-[400px] object-contain rounded-xl border border-border bg-background/50  h-auto" alt="${alt}" />`;
     },
 
     pre: async (element: any) => {

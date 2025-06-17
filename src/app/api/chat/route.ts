@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { streamText, tool } from "ai";
+import { generateText, streamText, tool } from "ai";
 import { google } from "@ai-sdk/google";
 import { auth } from "@/auth";
 import { z } from "zod";
 import { GoogleGenAI, Modality } from "@google/genai";
 import axios from "axios";
 
-const uploadToCloudinary = async (imageBuffer: Buffer, filename: string): Promise<any> => {
+const uploadToCloudinary = async (
+  imageBuffer: Buffer,
+  filename: string
+): Promise<any> => {
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
   const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
 
@@ -15,19 +18,19 @@ const uploadToCloudinary = async (imageBuffer: Buffer, filename: string): Promis
   }
 
   const formData = new FormData();
-  
+
   // Create a Blob from the buffer and append as file
-  const blob = new Blob([imageBuffer], { type: 'image/png' });
+  const blob = new Blob([imageBuffer], { type: "image/png" });
   formData.append("file", blob, filename);
   formData.append("upload_preset", uploadPreset);
   formData.append("resource_type", "image");
 
   try {
     const endpoint = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
-    
+
     const response = await axios.post(endpoint, formData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        "Content-Type": "multipart/form-data",
       },
     });
 
@@ -47,7 +50,7 @@ const generateImage = async (prompt: string) => {
 
   try {
     const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
-    
+
     const response = await ai.models.generateContent({
       model: "gemini-2.0-flash-preview-image-generation",
       contents: prompt,
@@ -65,10 +68,10 @@ const generateImage = async (prompt: string) => {
       } else if (part.inlineData) {
         const imageData = part.inlineData.data;
         const buffer = Buffer.from(imageData, "base64");
-        
+
         // Generate unique filename
         const filename = `gemini-generated-${Date.now()}.png`;
-        
+
         // Upload to Cloudinary
         const cloudinaryResponse = await uploadToCloudinary(buffer, filename);
         imageUrl = cloudinaryResponse.secure_url;
@@ -78,7 +81,7 @@ const generateImage = async (prompt: string) => {
     return {
       text: generatedText,
       imageUrl: imageUrl,
-      success: true
+      success: true,
     };
   } catch (error: any) {
     console.error("Image generation error:", error);
@@ -86,19 +89,7 @@ const generateImage = async (prompt: string) => {
   }
 };
 
-
 // Mock weather data function
-const getMockWeather = (location: string) => {
-  console.log(location);
-  const mockData = {
-    "New York": { temperature: 72, condition: "Sunny", humidity: 60 },
-    London: { temperature: 65, condition: "Cloudy", humidity: 75 },
-    Tokyo: { temperature: 80, condition: "Rainy", humidity: 80 },
-    default: { temperature: 70, condition: "Partly Cloudy", humidity: 65 },
-  };
-
-  return mockData[location] || mockData.default;
-};
 
 // Tavily search function
 const searchTavily = async (query: string) => {
@@ -140,6 +131,18 @@ const searchTavily = async (query: string) => {
   }
 };
 
+const getMockWeather = (location: string) => {
+  console.log(location);
+  const mockData = {
+    "New York": { temperature: 72, condition: "Sunny", humidity: 60 },
+    London: { temperature: 65, condition: "Cloudy", humidity: 75 },
+    Tokyo: { temperature: 80, condition: "Rainy", humidity: 80 },
+    default: { temperature: 70, condition: "Partly Cloudy", humidity: 65 },
+  };
+
+  return mockData[location] || mockData.default;
+};
+
 export async function POST(request: NextRequest) {
   const session = await auth();
 
@@ -157,30 +160,78 @@ export async function POST(request: NextRequest) {
       model: google("models/gemini-2.0-flash-exp"),
       messages: messages,
       temperature: 1,
-      system: `You are a helpful AI assistant. You can help with various tasks including:
-      - Answering general questions of any response length  
-      - Getting weather information
-      - Searching the web for current information
-      -Note: Any how you have to fulfill the user's request and you can provide information any topic
-      - Give all the tool results provided by the tool in the response
-      
-      
-         IMPORTANT FORMATTING RULE:
-    When you use any tool, you MUST wrap your entire response (including the information from the tool) inside <t3-artifact> tags like this:
-    
-    <t3-artifact>
-    [Your complete response based on the tool results goes here]
-    </t3-artifact>
-
-      When you need to use a tool, briefly mention what you're doing (e.g., "Let me search for that information...") and then proceed with the tool call.
-      `,
+      system: `Generate a diagram based on a text prompt using AI. 
+    The generated diagram will be automatically created and return a <t3-diagram>mermaid_code</t3-diagram> tag. 
+    Use this when users ask to create, generate, or make diagrams, flowcharts, charts, or visual representations and always return the <t3-diagram> tag with the mermaid code in it.`,
       maxSteps: 3,
       toolChoice: "auto",
       tools: {
+        generateDiagram: tool({
+          description:
+            `A tool to generate diagram code based on a text description. Use this when users ask to create flowcharts, diagrams, organizational charts, sequence diagrams, or any visual representation.`,
+          parameters: z.object({
+            description: z
+              .string()
+              .describe("The detailed description of the diagram to generate (e.g., 'create a flowchart for user login process')"),
+            diagramType: z
+              .string()
+              .optional()
+              .describe("Optional: specify diagram type (flowchart, sequence, class, state, etc.)")
+          }),
+          execute: async ({ description, diagramType }) => {
+            try {
+              const prompt = `Generate valid Mermaid diagram code for the following description: "${description}"
+              ${diagramType ? `Diagram type: ${diagramType}` : ''}
+              
+              CRITICAL REQUIREMENTS:
+              - Return ONLY valid Mermaid syntax code
+              - No explanations, comments, or additional text
+              - Must be syntactically correct Mermaid code
+              - Use proper Mermaid syntax and structure
+              - Be precise and accurate to the description
+              
+              Examples:
+              graph TD
+                  A[Start] --> B{Decision}
+                  B -->|Yes| C[Action 1]
+                  B -->|No| D[Action 2]
+                  
+              sequenceDiagram
+                  participant A as Alice
+                  participant B as Bob
+                  A->>B: Hello Bob
+                  B->>A: Hello Alice
+                  
+              classDiagram
+                  class Animal {
+                      +String name
+                      +move()
+                  }`;
+        
+              const { text: mermaidCode } = await generateText({
+                model: google("models/gemini-2.0-flash-exp"),
+                prompt: prompt,
+              });
+        
+              return {
+                success: true,
+                diagramCode: mermaidCode.replace(/^```mermaid\s*|\s*```$/gm, '')
+                .replace(/^```.*$/gm, '')
+                .trim(),
+              };
+            } catch (error) {
+              console.error("Diagram generation error:", error);
+              return {
+                success: false,
+                diagramCode: `graph TD\n    A[Error] --> B[Failed to generate]`
+              };
+            }
+          },
+        }),
         getWeather: tool({
           description:
-            "A tool to get weather information for a specified location. " +
-            'Example: "New York", "London", "Tokyo". Returns temperature (in Fahrenheit), condition, and humidity.',
+            `A tool to get weather information for a specified location. 
+            Example: "New York", "London", "Tokyo". Returns temperature (in Fahrenheit), condition, and humidity.`,
           parameters: z.object({ location: z.string() }),
           execute: async ({ location }) => {
             const weather = getMockWeather(location);
@@ -194,13 +245,15 @@ export async function POST(request: NextRequest) {
         }),
         generateImage: tool({
           description:
-            "Generate an image based on a text prompt using Google's Gemini AI. " +
-            "The generated image will be automatically uploaded to Cloudinary and return a <t3-image>url</t3-image> tag " +
-            "Use this when users ask to create, generate, or make images and always return the <t3-image> tag with the url in it.",
+            `Generate an image based on a text prompt using Google's Gemini AI. 
+            The generated image will be automatically uploaded to Cloudinary and return a <t3-image>url</t3-image> tag 
+            Use this when users ask to create, generate, or make images and always return the <t3-image> tag with the url in it.`,
           parameters: z.object({
             prompt: z
               .string()
-              .describe("The detailed text prompt describing the image to generate"),
+              .describe(
+                "The detailed text prompt describing the image to generate"
+              ),
           }),
           execute: async ({ prompt }) => {
             try {
@@ -211,7 +264,8 @@ export async function POST(request: NextRequest) {
                 success: result.success,
                 text: result.text,
                 imageUrl: `<t3-image>${result.imageUrl}</t3-image>`,
-                message: "Image generated successfully and uploaded to Cloudinary"
+                message:
+                  "Image generated successfully and uploaded to Cloudinary",
               };
             } catch (error: any) {
               console.error("Image generation tool error:", error);
@@ -220,15 +274,15 @@ export async function POST(request: NextRequest) {
                 success: false,
                 error: error.message,
                 imageUrl: null,
-                message: "Failed to generate image"
+                message: "Failed to generate image",
               };
             }
           },
         }),
         searchWeb: tool({
           description:
-            "Search the web for current information, news, facts, or any topic that requires up-to-date data. " +
-            "Use this when you need recent information or specific facts not in your training data and IMPORTANT: give the all content of the web search including url and title.",
+            `Search the web for current information, news, facts, or any topic that requires up-to-date data. 
+            Use this when you need recent information or specific facts not in your training data and IMPORTANT: give the all content of the web search including url and title.`,
           parameters: z.object({
             query: z
               .string()
