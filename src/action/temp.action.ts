@@ -12,34 +12,7 @@ const searchTavily = async (query: string) => {
     throw new Error('TAVILY_API_KEY environment variable is not set');
   }
 
-  try {
-    const response = await fetch('https://api.tavily.com/search', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${TAVILY_API_KEY}`,
-      },
-      body: JSON.stringify({
-        query,
-        search_depth: 'basic',
-        include_answer: true,
-        include_raw_content: false,
-        max_results: 5,
-        include_domains: [],
-        exclude_domains: []
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Tavily API error: ${response.status} ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('Tavily search error:', error);
-    throw error;
-  }
+  return mockData[location as keyof typeof mockData] || mockData.default;
 };
 
 export async function generateLoveDefinition(input: string) {

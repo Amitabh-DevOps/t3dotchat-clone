@@ -15,6 +15,8 @@ export interface userType extends Document {
     selected: string[];
     favorite: string[];
   },
+  openRouterApiKey: string;
+  // apiKeys will implement later
   apiKeys: {
     model: string;
     key: string;

@@ -5,6 +5,8 @@ import { auth } from "@/auth";
 import { z } from "zod";
 import { GoogleGenAI, Modality } from "@google/genai";
 import axios from "axios";
+import { unstable_update as update } from "@/auth";
+import { getUser } from "@/action/user.action";
 
 const uploadToCloudinary = async (
   imageBuffer: Buffer,
@@ -140,12 +142,19 @@ const getMockWeather = (location: string) => {
     default: { temperature: 70, condition: "Partly Cloudy", humidity: 65 },
   };
 
-  return mockData[location] || mockData.default;
+  return mockData[location as keyof typeof mockData] || mockData.default;
 };
 
 export async function POST(request: NextRequest) {
   const session = await auth();
-
+  const { data: user } = await getUser();
+    await update({
+      ...session,
+      user: {
+        ...session?.user,
+        openRouterApiKey: user.openRouterApiKey,
+      },
+    }); 
   try {
     const { messages } = await request.json();
 

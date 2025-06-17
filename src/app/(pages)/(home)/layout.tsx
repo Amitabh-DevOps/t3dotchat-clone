@@ -28,13 +28,19 @@ import ChatHeader from "@/components/chat-cmp/chat-header";
 import { LuLogIn, LuPin, LuPinOff, LuSettings2 } from "react-icons/lu";
 import ThemeToggle from "@/components/global-cmp/theme-toggle";
 import Link from "next/link";
-import BranchOffIcon from "../../../../public/icons/branch-off";
-import { auth } from "@/auth";
 import ChatInput from "@/components/chat-cmp/chat-input";
 import SearchThreads from "@/components/chat-cmp/search-threads";
 import SidebarThreads from "@/components/global-cmp/sidebar-threads";
+import { getUser } from "@/action/user.action";
+import { redirect } from "next/navigation";
+import { auth } from "@/auth";
 
-function ChatLayoutContent({ children }: { children: React.ReactNode }) {
+async function ChatLayoutContent({ children }: { children: React.ReactNode }) {
+
+  const session = await auth()
+  console.log(session?.user)
+  
+
   return (
     <div className={` h-screen w-full flex flex-col overflow-hidden `}>
       <ChatHeader />
@@ -96,8 +102,13 @@ export default async function ChatLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
-
+  const [session, user] = await Promise.all([auth(), getUser()]);
+  // if (!session?.user) {
+  //   redirect("/auth");
+  // }
+  // // if (!user?.data?.openRouterApiKey || user?.data?.openRouterApiKey == "") {
+  // //   redirect("/connect");
+  // // }
   return (
     <>
       <SidebarProvider>

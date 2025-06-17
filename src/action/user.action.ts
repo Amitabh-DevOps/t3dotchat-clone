@@ -3,6 +3,7 @@ import connectDB from "@/config/db";
 import { serializeData } from "@/lib/constant";
 import User from "@/models/user.model";
 import { auth } from "@/auth";
+import { unstable_update as update } from "@/auth";
 
 export const getUser = async () => {
   const session = await auth();
@@ -28,166 +29,6 @@ export const getUser = async () => {
 
     return {
       data: serializeData(user),
-      error: null,
-    };
-  } catch (error: any) {
-    return {
-      data: null,
-      error: error.message,
-    };
-  }
-};
-
-export const addApiKey = async ({
-  model,
-  key,
-}: {
-  model: string;
-  key: string;
-}) => {
-  const session = await auth();
-
-  if (!session?.user) {
-    return {
-      data: null,
-      error: "Unauthorized",
-    };
-  }
-
-  try {
-    await connectDB();
-
-    const user = await User.findById(session.user.id);
-
-    if (!user) {
-      return {
-        data: null,
-        error: "User not found",
-      };
-    }
-
-    // Check if model already exists
-    const existingApiKey = user.apiKeys.find(
-      (apiKey: any) => apiKey.model === model
-    );
-
-    if (existingApiKey) {
-      return {
-        data: null,
-        error: "API key for this model already exists",
-      };
-    }
-
-    user.apiKeys.push({ model, key });
-    await user.save();
-
-    return {
-      data: serializeData(user.apiKeys),
-      error: null,
-    };
-  } catch (error: any) {
-    return {
-      data: null,
-      error: error.message,
-    };
-  }
-};
-
-export const updateApiKey = async ({
-  _id,
-  key,
-}: {
-  _id: string;
-  key: string;
-}) => {
-  const session = await auth();
-
-  if (!session?.user) {
-    return {
-      data: null,
-      error: "Unauthorized",
-    };
-  }
-
-  try {
-    await connectDB();
-
-    const user = await User.findById(session.user.id);
-
-    if (!user) {
-      return {
-        data: null,
-        error: "User not found",
-      };
-    }
-
-    const apiKeyIndex = user.apiKeys.findIndex(
-      (apiKey: any) => apiKey._id.toString() === _id
-    );
-
-    if (apiKeyIndex === -1) {
-      return {
-        data: null,
-        error: "API key not found",
-      };
-    }
-
-    if (key !== undefined) {
-      user.apiKeys[apiKeyIndex].key = key;
-    }
-
-    await user.save();
-
-    return {
-      data: serializeData(user.apiKeys),
-      error: null,
-    };
-  } catch (error: any) {
-    return {
-      data: null,
-      error: error.message,
-    };
-  }
-};
-
-export const deleteApiKey = async ({ _id }: { _id: string }) => {
-  const session = await auth();
-
-  if (!session?.user) {
-    return {
-      data: null,
-      error: "Unauthorized",
-    };
-  }
-
-  try {
-    await connectDB();
-
-    const user = await User.findById(session.user.id);
-
-    if (!user) {
-      return {
-        data: null,
-        error: "User not found",
-      };
-    }
-
-    const apiKeyIndex = user.apiKeys.findIndex(
-      (apiKey: any) => apiKey._id.toString() === _id
-    );
-
-    if (apiKeyIndex === -1) {
-      return {
-        data: null,
-        error: "API key not found",
-      };
-    }
-
-    user.apiKeys.splice(apiKeyIndex, 1);
-    await user.save();
-
-    return {
-      data: serializeData(user.apiKeys),
       error: null,
     };
   } catch (error: any) {
@@ -253,6 +94,261 @@ export const updateT3ChatInfo = async ({
 
     return {
       data: serializeData(user.t3ChatInfo),
+      error: null,
+    };
+  } catch (error: any) {
+    return {
+      data: null,
+      error: error.message,
+    };
+  }
+};
+
+export const updateOpenRouterApiKey = async (key: string) => {
+  const session = await auth();
+
+  if (!session?.user) {
+    return {
+      data: null,
+      error: "Unauthorized",
+    };
+  }
+
+  try {
+    await connectDB();
+
+    const user = await User.findById(session.user.id);
+
+    if (!user) {
+      return {
+        data: null,
+        error: "User not found",
+      };
+    }
+
+    user.openRouterApiKey = key;
+
+    const updatedUser = await user.save();
+    await update({
+      user: {
+        ...session.user,
+        openRouterApiKey: updatedUser.openRouterApiKey,
+      },
+    });
+
+    return {
+      data: serializeData(updatedUser),
+      error: null,
+    };
+  } catch (error: any) {
+    return {
+      data: null,
+      error: error.message,
+    };
+  }
+}
+
+export const updateModels = async ({
+  selected,
+  favorite,
+}: {
+  selected?: string[];
+  favorite?: string[];
+}) => {
+  const session = await auth();
+
+  if (!session?.user) {
+    return {
+      data: null,
+      error: "Unauthorized",
+    };
+  }
+  try {
+    await connectDB();
+
+    const user = await User.findById(session.user.id);
+
+    if (!user) {
+      return {
+        data: null,
+        error: "User not found",
+      };
+    }
+
+    if (selected !== undefined) {
+      user.models.selected = selected;
+    }
+    if (favorite !== undefined) {
+      user.models.favorite = favorite;
+    }
+
+    await user.save();
+
+    return {
+      data: serializeData(user.models),
+      error: null,
+    };
+  } catch (error: any) {
+    return {
+      data: null,
+      error: error.message,
+    };
+  }
+}
+
+// this action will implement later
+export const addApiKey = async ({
+  model,
+  key,
+}: {
+  model: string;
+  key: string;
+}) => {
+  const session = await auth();
+
+  if (!session?.user) {
+    return {
+      data: null,
+      error: "Unauthorized",
+    };
+  }
+
+  try {
+    await connectDB();
+
+    const user = await User.findById(session.user.id);
+
+    if (!user) {
+      return {
+        data: null,
+        error: "User not found",
+      };
+    }
+
+    // Check if model already exists
+    const existingApiKey = user.apiKeys.find(
+      (apiKey: any) => apiKey.model === model
+    );
+
+    if (existingApiKey) {
+      return {
+        data: null,
+        error: "API key for this model already exists",
+      };
+    }
+
+    user.apiKeys.push({ model, key });
+    await user.save();
+
+    return {
+      data: serializeData(user.apiKeys),
+      error: null,
+    };
+  } catch (error: any) {
+    return {
+      data: null,
+      error: error.message,
+    };
+  }
+};
+
+// this action will implement later
+export const updateApiKey = async ({
+  _id,
+  key,
+}: {
+  _id: string;
+  key: string;
+}) => {
+  const session = await auth();
+
+  if (!session?.user) {
+    return {
+      data: null,
+      error: "Unauthorized",
+    };
+  }
+
+  try {
+    await connectDB();
+
+    const user = await User.findById(session.user.id);
+
+    if (!user) {
+      return {
+        data: null,
+        error: "User not found",
+      };
+    }
+
+    const apiKeyIndex = user.apiKeys.findIndex(
+      (apiKey: any) => apiKey._id.toString() === _id
+    );
+
+    if (apiKeyIndex === -1) {
+      return {
+        data: null,
+        error: "API key not found",
+      };
+    }
+
+    if (key !== undefined) {
+      user.apiKeys[apiKeyIndex].key = key;
+    }
+
+    await user.save();
+
+    return {
+      data: serializeData(user.apiKeys),
+      error: null,
+    };
+  } catch (error: any) {
+    return {
+      data: null,
+      error: error.message,
+    };
+  }
+};
+
+// this action will implement later
+export const deleteApiKey = async ({ _id }: { _id: string }) => {
+  const session = await auth();
+
+  if (!session?.user) {
+    return {
+      data: null,
+      error: "Unauthorized",
+    };
+  }
+
+  try {
+    await connectDB();
+
+    const user = await User.findById(session.user.id);
+
+    if (!user) {
+      return {
+        data: null,
+        error: "User not found",
+      };
+    }
+
+    const apiKeyIndex = user.apiKeys.findIndex(
+      (apiKey: any) => apiKey._id.toString() === _id
+    );
+
+    if (apiKeyIndex === -1) {
+      return {
+        data: null,
+        error: "API key not found",
+      };
+    }
+
+    user.apiKeys.splice(apiKeyIndex, 1);
+    await user.save();
+
+    return {
+      data: serializeData(user.apiKeys),
       error: null,
     };
   } catch (error: any) {
