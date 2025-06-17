@@ -22,13 +22,13 @@ export default function VisualOptions() {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-2xl font-bold text-white mb-6">Visual Options</h2>
+        <h2 className="text-2xl font-bold mb-6">Visual Options</h2>
 
         <div className="space-y-6">
           {/* Boring Theme */}
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
-              <Label className="text-white text-base font-medium">
+              <Label className="text-base font-medium">
                 Boring Theme
               </Label>
               <p className="text-sm text-muted-foreground mt-1">
@@ -41,7 +41,7 @@ export default function VisualOptions() {
           {/* Hide Personal Information */}
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
-              <Label className="text-white text-base font-medium">
+              <Label className="text-base font-medium">
                 Hide Personal Information
               </Label>
               <p className="text-sm text-muted-foreground mt-1">
@@ -57,7 +57,7 @@ export default function VisualOptions() {
           {/* Disable Thematic Breaks */}
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
-              <Label className="text-white text-base font-medium">
+              <Label className="text-base font-medium">
                 Disable Thematic Breaks
               </Label>
               <p className="text-sm text-muted-foreground mt-1">
@@ -75,7 +75,7 @@ export default function VisualOptions() {
           {/* Stats for Nerds */}
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
-              <Label className="text-white text-base font-medium">
+              <Label className="text-base font-medium">
                 Stats for Nerds
               </Label>
               <p className="text-sm text-muted-foreground mt-1">
@@ -97,7 +97,7 @@ export default function VisualOptions() {
         <div className="space-y-6">
           {/* Main Text Font */}
           <div className="space-y-2">
-            <Label className="text-white text-base font-medium">
+            <Label className="text-base font-medium">
               Main Text Font
             </Label>
             <p className="text-sm text-muted-foreground">
@@ -120,7 +120,7 @@ export default function VisualOptions() {
 
           {/* Code Font */}
           <div className="space-y-2">
-            <Label className="text-white text-base font-medium">
+            <Label className="text-base font-medium">
               Code Font
             </Label>
             <p className="text-sm text-muted-foreground">
@@ -144,7 +144,7 @@ export default function VisualOptions() {
 
         {/* Fonts Preview */}
         <div className="space-y-4">
-          <Label className="text-white text-base font-medium">
+          <Label className="text-base font-medium">
             Fonts Preview
           </Label>
 
