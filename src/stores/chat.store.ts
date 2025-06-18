@@ -8,6 +8,10 @@ type ChatStoreType = {
    setMessages: (messages: any) => void;
    isLoading: boolean;
    setIsLoading: (isLoading: boolean) => void;
+   isRegenerate: boolean;
+   setIsRegenerate: (isRegenerate: boolean) => void;
+   isWebSearch: boolean;
+   setIsWebSearch: (isWebSearch: boolean) => void;
 }
 
 const chatStore = create<ChatStoreType>((set) => ({
@@ -17,6 +21,10 @@ const chatStore = create<ChatStoreType>((set) => ({
     setMessages: (messages: any) => set({ messages }),
     isLoading: false,
     setIsLoading: (isLoading: boolean) => set({ isLoading }),
+    isRegenerate: false,
+    setIsRegenerate: (isRegenerate: boolean) => set({ isRegenerate }),
+    isWebSearch: false,
+    setIsWebSearch: (isWebSearch: boolean) => set({ isWebSearch }),
 }))
 
 export default chatStore

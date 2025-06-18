@@ -501,7 +501,7 @@ body {
   }
 }
 
-#chat-input {
+#chat-input, .edit-input{
   field-sizing: content;
 }
 
@@ -521,8 +521,6 @@ body {
   }
 }
 
-@layer base {
-}
 
 .mark-response pre {
   background-color: var(--color-background) !important;
@@ -540,7 +538,11 @@ body {
 
 }
 
-.mark-response pre,code {
+code{
+  background-color:var(--color-background) !important;
+}
+
+.mark-response pre, pre code {
   background-color: transparent !important;
   font-family: var(--font-berkeley-mono) !important;
   padding: 0 !important;
@@ -557,17 +559,45 @@ span {
   animation: l5 1s infinite linear alternate;
 }
 @keyframes l5 {
-    0%  {box-shadow: 20px 0 var(--color-accent), -20px 0 var(--color-secondary);background: var(--color-accent) }
-    33% {box-shadow: 20px 0 var(--color-accent), -20px 0 var(--color-secondary);background: var(--color-secondary)}
-    66% {box-shadow: 20px 0 var(--color-secondary),-20px 0 var(--color-accent); background: var(--color-secondary)}
-    100%{box-shadow: 20px 0 var(--color-secondary),-20px 0 var(--color-accent); background: var(--color-accent) }
+    0%  {box-shadow: 20px 0 var(--color-accent), -20px 0 var(--color-secondary/50);background: var(--color-accent) }
+    33% {box-shadow: 20px 0 var(--color-accent), -20px 0 var(--color-secondary/50);background: var(--color-secondary/50)}
+    66% {box-shadow: 20px 0 var(--color-secondary/50),-20px 0 var(--color-accent); background: var(--color-secondary/50)}
+    100%{box-shadow: 20px 0 var(--color-secondary)/50,-20px 0 var(--color-accent); background: var(--color-accent) }
 }
 
-.t3-tools:has(~ .mark-response p) {
-  display: none;
+/* Hide t3-tool-loader when t3-tool-output exists in the same container */
+.mark-response:has(.t3-tool-output) .t3-tool-loader {
+  display: none !important;
+}
+
+/* Alternative: Hide t3-tool-loader when it's followed by any sibling t3-tool-output */
+.t3-tool-loader:has(~ .t3-tool-output) {
+  display: none !important;
+}
+.t3-tool-loader:has(~ p:not(:empty)) {
+  display: none !important;
+}
+@layer base {
+  
+.animate-bounce-dot {
+  animation: bounce-dot 1.4s infinite ease-in-out both;
+}
+
+.animate-delay-1 {
+  animation-delay: -0.32s;
+}
+
+.animate-delay-2 {
+  animation-delay: -0.16s;
+}
+@keyframes bounce-dot {
+  0%, 80%, 100% {
+      transform: scale(0);
+  }
+  40% {
+      transform: scale(1);
+  }
+}
 }
 
 
-.t3-tools:has(~ .mark-response t3-artifact) {
-  display: none;
-}

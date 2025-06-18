@@ -46,17 +46,17 @@ export function useStreamResponse(): UseStreamResponseReturn {
       attachmentUrl?: string;
       resetAttachment?: () => void;
     }) => {
-      const { query, messages, setMessages, setQuery } =
-        chatStore.getState();
+      const { query, messages, setMessages, setQuery, isWebSearch } = chatStore.getState();
 
       if (!query?.trim() || isLoading) return;
       const trimmedQuery = query.trim();
+      setQuery("");
       const attachment = attachmentUrl ? attachmentUrl : "";
-      
+
       if (resetAttachment) {
         resetAttachment();
       }
-      
+
       setIsLoading(true);
       setError(null);
 
@@ -68,14 +68,15 @@ export function useStreamResponse(): UseStreamResponseReturn {
         userId: "current-user", // Replace with actual user ID from your auth
         userQuery: trimmedQuery,
         attachment: attachment || undefined,
-        isSearch: false,
+        isSearch: isWebSearch,
         aiResponse: [{ content: "", model: "Gemini 2.5 Flash" }],
         isPending: true,
         createdAt: new Date(),
       };
 
       // Add optimistic message immediately
-      const currentMessages = messages && Array.isArray(messages) ? messages : [];
+      const currentMessages =
+        messages && Array.isArray(messages) ? messages : [];
       setMessages([...currentMessages, optimisticMessage]);
 
       try {
@@ -114,6 +115,7 @@ export function useStreamResponse(): UseStreamResponseReturn {
           },
           body: JSON.stringify({
             messages: apiMessages,
+            isWebSearch: isWebSearch,
           }),
         });
 
@@ -137,20 +139,23 @@ export function useStreamResponse(): UseStreamResponseReturn {
 
           const chunk = decoder.decode(value, { stream: true });
           assistantResponse += chunk;
-          
+
           // Update the optimistic message with streaming response
           const currentState = chatStore.getState();
           const stateMessages = currentState.messages || [];
-          const updatedMessages = stateMessages.map((msg: Message) => 
-            msg.tempId === tempId 
-              ? { ...msg, aiResponse: [{ content: assistantResponse, model: "Gemini 2.5 Flash" }] }
+          const updatedMessages = stateMessages.map((msg: Message) =>
+            msg.tempId === tempId
+              ? {
+                  ...msg,
+                  aiResponse: [
+                    { content: assistantResponse, model: "Gemini 2.5 Flash" },
+                  ],
+                }
               : msg
           );
           currentState.setMessages(updatedMessages);
         }
 
-        console.log(chatid, "hello world");
-        
         // Save message to database
         const savedMessage = await createMessage({
           threadId: chatid,
@@ -162,24 +167,20 @@ export function useStreamResponse(): UseStreamResponseReturn {
         });
 
         if (savedMessage.error) {
-          console.log(savedMessage, "responseMsg");
           throw new Error(savedMessage.error);
         }
 
         // Replace optimistic message with saved message
         const finalState = chatStore.getState();
         const stateMessagesForFinal = finalState.messages || [];
-        const finalMessages = stateMessagesForFinal.map((msg: Message) => 
-          msg.tempId === tempId 
+        const finalMessages = stateMessagesForFinal.map((msg: Message) =>
+          msg.tempId === tempId
             ? { ...savedMessage.data, isPending: false }
             : msg
         );
         finalState.setMessages(finalMessages);
-        setIsLoading(false);
-
       } catch (err) {
         console.error("Streaming error:", err);
-        
         // Remove optimistic message on error
         const errorState = chatStore.getState();
         const errorStateMessages = errorState.messages || [];
@@ -187,7 +188,6 @@ export function useStreamResponse(): UseStreamResponseReturn {
           (msg: Message) => msg.tempId !== tempId
         );
         errorState.setMessages(messagesWithoutOptimistic);
-        
         setError(err instanceof Error ? err.message : "An error occurred");
       } finally {
         setQuery("");

@@ -51,17 +51,18 @@ interface MessageActionsProps {
   showBranch?: boolean;
   showEdit?: boolean;
   modelName?: string;
+  role: string;
   messageId?: string;
   message?: Message;
 }
 
 // Reusable Message Actions Component
 export const MessageActions: React.FC<MessageActionsProps> = ({
-  onRetry,
   onEdit,
   message,
   onCopy,
   onBranch,
+  role,
   messageId,
   userQuery,
   totalResponses = 0,
@@ -75,8 +76,9 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
     useChatStream();
 
   const queryClient = useQueryClient();
-  const { messages, setMessages } = chatStore();
+  const { messages, setMessages,setIsRegenerate } = chatStore();
   const retryMessage = async () => {
+    setIsRegenerate(true);
     const attachment = message?.attachment;
     const trimmedQuery = message?.userQuery;
 
@@ -124,21 +126,6 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
         });
       }
       setResponseIndex(generateResponse?.data?.aiResponse?.length - 1 || 0);
-
-      // setMessages((prevMessages) => {
-      //   return prevMessages.map((message) => {
-      //     console.log(message.aiResponse);
-      //     if (message._id === messageId) {
-      //       return {
-      //         ...message,
-      //       };
-      //     }
-      //     return message;
-      //   });
-      // });
-      // queryClient.invalidateQueries({
-      //   queryKey: ["thread-messages", params.chatid],
-      // });
     } catch (err) {
       console.error("Retry failed:", err);
     }
@@ -146,7 +133,7 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
 
   return (
     <div className="flex items-center gap-1">
-      <span className="flex items-center gap-1">
+    {role === "assistant" && totalResponses > 1 && <span className="flex items-center gap-1">
         <button
           disabled={responseIndex === 0}
           className="cursor-pointer"
@@ -162,7 +149,7 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
         >
           <IoIosArrowForward />
         </button>
-      </span>
+      </span>}
       <Button
         variant="ghost"
         size="icon"
@@ -205,25 +192,27 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
         </Button>
       )}
 
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-8 w-8 text-xs"
-        aria-label="Retry message"
-        onClick={retryMessage}
-        data-action="retry"
-        data-state="closed"
-      >
-        <div className="relative size-4">
-          <RefreshCcw
-            className={`${isLoading ? "animate-spin" : "h-4 w-4"}`}
-            aria-hidden="true"
-          />
-          <span className="sr-only">Retry</span>
-        </div>
-      </Button>
+      {role === "assistant" && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 text-xs"
+          aria-label="Retry message"
+          onClick={retryMessage}
+          data-action="retry"
+          data-state="closed"
+        >
+          <div className="relative size-4">
+            <RefreshCcw
+              className={`${isLoading ? "animate-spin" : "h-4 w-4"}`}
+              aria-hidden="true"
+            />
+            <span className="sr-only">Retry</span>
+          </div>
+        </Button>
+      )}
 
-      {showEdit && (
+      {role === "user" && (
         <Button
           variant="ghost"
           size="icon"
@@ -246,6 +235,7 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
 };
 
 // User Message Component
+
 interface UserMessageProps {
   content: string;
   attachmentUrl?: string;
@@ -263,26 +253,77 @@ export const UserMessage: React.FC<UserMessageProps> = ({
   onEdit,
   onCopy,
 }) => {
+  const { setQuery } = chatStore();
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState(content);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const handleEdit = () => {
+    setIsEditing(!isEditing);
+    setEditContent(content);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      setQuery(editContent);
+      setIsEditing(false);
+    }
+    if (e.key === 'Escape') {
+      setIsEditing(false);
+      setEditContent(content);
+    }
+  };
+
+  const handleBlur = () => {
+    setIsEditing(false);
+    setEditContent(content);
+  };
+
   return (
     <div
       data-message-id={messageId}
-      className="flex relative justify-end  items-end flex-col"
+      className="flex relative justify-end items-end flex-col"
     >
-      <div
+    {
+      isEditing ? (
+       <div className="flex items-end gap-1 flex-col w-full ">
+         <textarea
+          ref={textareaRef}
+          value={editContent}
+          onChange={(e) => setEditContent(e.target.value)}
+          onKeyDown={handleKeyDown}
+          onBlur={handleBlur}
+          className="w-full edit-input  border !border-secondary/50 focus:ring ring-secondary/80 max-h-48 min-h-16 outline-none bg-transparent text-inherit font-inherit leading-inherit p-2 rounded-xl shadow-inner"
+          placeholder="Type your message..."
+        />
+        <MessageActions
+            role="user"
+            onEdit={handleEdit}
+            onCopy={onCopy}
+            showBranch={false}
+            showEdit={true}
+          />
+       </div>
+      ) : (
+       <>
+         <div
         role="article"
         aria-label="Your message"
-        className="group  inline-block max-w-[80%] break-words rounded-xl border border-secondary/50 bg-secondary/50 p-3.5 px-4 text-left"
+        className="group inline-block max-w-[80%] break-words rounded-xl border border-secondary/50 bg-secondary/50 p-3.5 px-4 text-left"
       >
         <span className="sr-only">Your message: </span>
         <div className="flex flex-col gap-3">
-          <div className="prose prose-pink max-w-none dark:prose-invert prose-pre:m-0 prose-pre:bg-transparent prose-pre:p-0">
-            <p>{content || ""}</p>
-          </div>
+          
+            <div className="prose prose-pink max-w-none dark:prose-invert prose-pre:m-0 prose-pre:bg-transparent prose-pre:p-0">
+              <p>{content || ""}</p>
+            </div>
+          
         </div>
-        <div className="absolute right-0 -bottom-10  flex items-center gap-1 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 group-focus:opacity-100">
+        <div className="absolute right-0 -bottom-10 flex items-center gap-1 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 group-focus:opacity-100">
           <MessageActions
-            onRetry={onRetry}
-            onEdit={onEdit}
+            role="user"
+            onEdit={handleEdit}
             onCopy={onCopy}
             showBranch={false}
             showEdit={true}
@@ -299,7 +340,7 @@ export const UserMessage: React.FC<UserMessageProps> = ({
           />
 
           <img
-            className="object-cover  relative rounded-lg h-full w-full peer-checked:object-contain peer-checked:max-w-full peer-checked:max-h-full"
+            className="object-cover relative rounded-lg h-full w-full peer-checked:object-contain peer-checked:max-w-full peer-checked:max-h-full"
             src={attachmentUrl}
             alt={messageId + "-attachment"}
             loading="lazy"
@@ -313,6 +354,9 @@ export const UserMessage: React.FC<UserMessageProps> = ({
           </label>
         </div>
       )}
+       </>
+      )
+    }
     </div>
   );
 };
@@ -340,7 +384,6 @@ export const AIResponse: React.FC<AIResponseProps> = ({
   message,
   messageId,
   isStreaming = false,
-  isLoading = false,
   modelName = "Gemini 2.5 Flash",
   onRetry,
   onCopy,
@@ -372,15 +415,24 @@ export const AIResponse: React.FC<AIResponseProps> = ({
           className="prose prose-pink max-w-none dark:prose-invert prose-pre:m-0 prose-pre:bg-transparent prose-pre:p-0"
         >
           <span className="sr-only">Assistant Reply: </span>
-          <div
-            className="mark-response"
-            dangerouslySetInnerHTML={{ __html: htmlContent }}
-          />
+          {!htmlContent ? (
+            <div className="flex space-x-2 mt-2">
+              <div className="w-2.5 h-2.5 bg-primary/50 rounded-full animate-bounce-dot animate-delay-1"></div>
+              <div className="w-2.5 h-2.5 bg-primary/50 rounded-full animate-bounce-dot animate-delay-2"></div>
+              <div className="w-2.5 h-2.5 bg-primary/50 rounded-full animate-bounce-dot"></div>
+            </div>
+          ) : (
+            <div
+              className="mark-response"
+              dangerouslySetInnerHTML={{ __html: htmlContent }}
+            />
+          )}
         </div>
         <div className="absolute left-0 -ml-0.5 mt-2 flex w-full flex-row justify-start gap-1 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 group-focus:opacity-100">
           <div className="flex w-full flex-row justify-between gap-1 sm:w-auto">
             <MessageActions
               onRetry={onRetry}
+              role="assistant"
               message={message}
               messageId={messageId}
               totalResponses={totalResponses}
@@ -427,7 +479,6 @@ export const MessagePair: React.FC<MessagePairProps> = ({
         content={message.userQuery}
         attachmentUrl={message.attachment}
         messageId={message._id}
-        onRetry={onRetryUser}
         onEdit={onEditUser}
         onCopy={onCopyUser}
       />

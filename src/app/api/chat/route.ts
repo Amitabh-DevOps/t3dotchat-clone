@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateText, streamText, tool } from "ai";
 import { google } from "@ai-sdk/google";
-import { auth } from "@/auth";
 import { z } from "zod";
 import { GoogleGenAI, Modality } from "@google/genai";
 import axios from "axios";
-import { unstable_update as update } from "@/auth";
-import { getUser } from "@/action/user.action";
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+import { auth } from "@/auth";
 
 const uploadToCloudinary = async (
   imageBuffer: Buffer,
@@ -133,30 +132,26 @@ const searchTavily = async (query: string) => {
   }
 };
 
-const getMockWeather = (location: string) => {
-  console.log(location);
-  const mockData = {
-    "New York": { temperature: 72, condition: "Sunny", humidity: 60 },
-    London: { temperature: 65, condition: "Cloudy", humidity: 75 },
-    Tokyo: { temperature: 80, condition: "Rainy", humidity: 80 },
-    default: { temperature: 70, condition: "Partly Cloudy", humidity: 65 },
-  };
+const systemPrompt = `You are a creative, intelligent AI assistant that provides comprehensive, helpful responses while being natural and conversational.
 
-  return mockData[location as keyof typeof mockData] || mockData.default;
-};
+CORE BEHAVIOR:
+- Be creative, detailed, and thorough in your responses
+- Provide complete solutions without asking unnecessary questions
+- Make reasonable assumptions when details are missing
+- Be proactive and helpful, not cautious or paranoid
+- Give full, rich responses that satisfy user needs completely
+
+CONVERSATION STYLE:
+- Natural, engaging, and comprehensive
+- Avoid being overly cautious or asking too many clarifying questions
+- When users ask for something, DO IT - don't ask what they want unless truly ambiguous
+- Provide detailed explanations and examples
+- Be confident in your responses`;
 
 export async function POST(request: NextRequest) {
   const session = await auth();
-  const { data: user } = await getUser();
-    await update({
-      ...session,
-      user: {
-        ...session?.user,
-        openRouterApiKey: user.openRouterApiKey,
-      },
-    }); 
   try {
-    const { messages } = await request.json();
+    const { messages, isWebSearch } = await request.json();
 
     if (!messages || !Array.isArray(messages)) {
       return NextResponse.json(
@@ -164,97 +159,18 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-
+    const openrouter = createOpenRouter({
+      apiKey: session?.user?.openRouterApiKey,
+    });
     const result = streamText({
       model: google("models/gemini-2.0-flash-exp"),
-      messages: messages,
-      temperature: 1,
-      system: `Generate a diagram based on a text prompt using AI. 
-    The generated diagram will be automatically created and return a <t3-diagram>mermaid_code</t3-diagram> tag. 
-    Use this when users ask to create, generate, or make diagrams, flowcharts, charts, or visual representations and always return the <t3-diagram> tag with the mermaid code in it.`,
+      messages: [{ role: "system", content: systemPrompt }, ...messages],
+      temperature: 0.7,
       maxSteps: 3,
       toolChoice: "auto",
       tools: {
-        generateDiagram: tool({
-          description:
-            `A tool to generate diagram code based on a text description. Use this when users ask to create flowcharts, diagrams, organizational charts, sequence diagrams, or any visual representation.`,
-          parameters: z.object({
-            description: z
-              .string()
-              .describe("The detailed description of the diagram to generate (e.g., 'create a flowchart for user login process')"),
-            diagramType: z
-              .string()
-              .optional()
-              .describe("Optional: specify diagram type (flowchart, sequence, class, state, etc.)")
-          }),
-          execute: async ({ description, diagramType }) => {
-            try {
-              const prompt = `Generate valid Mermaid diagram code for the following description: "${description}"
-              ${diagramType ? `Diagram type: ${diagramType}` : ''}
-              
-              CRITICAL REQUIREMENTS:
-              - Return ONLY valid Mermaid syntax code
-              - No explanations, comments, or additional text
-              - Must be syntactically correct Mermaid code
-              - Use proper Mermaid syntax and structure
-              - Be precise and accurate to the description
-              
-              Examples:
-              graph TD
-                  A[Start] --> B{Decision}
-                  B -->|Yes| C[Action 1]
-                  B -->|No| D[Action 2]
-                  
-              sequenceDiagram
-                  participant A as Alice
-                  participant B as Bob
-                  A->>B: Hello Bob
-                  B->>A: Hello Alice
-                  
-              classDiagram
-                  class Animal {
-                      +String name
-                      +move()
-                  }`;
-        
-              const { text: mermaidCode } = await generateText({
-                model: google("models/gemini-2.0-flash-exp"),
-                prompt: prompt,
-              });
-        
-              return {
-                success: true,
-                diagramCode: mermaidCode.replace(/^```mermaid\s*|\s*```$/gm, '')
-                .replace(/^```.*$/gm, '')
-                .trim(),
-              };
-            } catch (error) {
-              console.error("Diagram generation error:", error);
-              return {
-                success: false,
-                diagramCode: `graph TD\n    A[Error] --> B[Failed to generate]`
-              };
-            }
-          },
-        }),
-        getWeather: tool({
-          description:
-            `A tool to get weather information for a specified location. 
-            Example: "New York", "London", "Tokyo". Returns temperature (in Fahrenheit), condition, and humidity.`,
-          parameters: z.object({ location: z.string() }),
-          execute: async ({ location }) => {
-            const weather = getMockWeather(location);
-            return {
-              location,
-              temperature: weather.temperature,
-              condition: weather.condition,
-              humidity: weather.humidity,
-            };
-          },
-        }),
         generateImage: tool({
-          description:
-            `Generate an image based on a text prompt using Google's Gemini AI. 
+          description: `Generate an image based on a text prompt using Google's Gemini AI. 
             The generated image will be automatically uploaded to Cloudinary and return a <t3-image>url</t3-image> tag 
             Use this when users ask to create, generate, or make images and always return the <t3-image> tag with the url in it.`,
           parameters: z.object({
@@ -289,9 +205,8 @@ export async function POST(request: NextRequest) {
           },
         }),
         searchWeb: tool({
-          description:
-            `Search the web for current information, news, facts, or any topic that requires up-to-date data. 
-            Use this when you need recent information or specific facts not in your training data and IMPORTANT: give the all content of the web search including url and title.`,
+          description: `Search the web for current information, news, facts, or any topic that requires up-to-date data. 
+            Use this when you need recent information or specific facts not in your training data and IMPORTANT: give the all content of the web search including url and title and return the content in <t3-websearch> tag.`,
           parameters: z.object({
             query: z
               .string()
@@ -299,6 +214,13 @@ export async function POST(request: NextRequest) {
           }),
           execute: async ({ query }) => {
             try {
+              if (!isWebSearch) {
+                return {
+                  query: query,
+                  error: "Web search is disabled. Please try again later.",
+                  results: [],
+                };
+              }
               const searchResults = await searchTavily(query);
 
               // Format the results for the AI model
@@ -341,19 +263,18 @@ export async function POST(request: NextRequest) {
               buffer += text;
               controller.enqueue(encoder.encode(text));
             } else if (delta.type === "tool-call") {
-              // Get tool-specific message
               const toolName = delta.toolName;
               let searchingMsg = "";
 
               switch (toolName) {
                 case "searchWeb":
-                  searchingMsg = "\n\n <t3> Search Tool </t3>\n\n";
+                  searchingMsg = "\n\n <t3>Searching Web</t3>\n\n";
                   break;
-                case "getWeather":
-                  searchingMsg = "\n\n<t3>Weather Tool</t3>\n\n";
+                case "generateImage":
+                  searchingMsg = "\n\n<t3>Generating Image</t3>\n\n";
                   break;
                 default:
-                  searchingMsg = "\n\n⏳ Processing...\n\n";
+                  searchingMsg = "\n\n<t3>⏳ Processing...</t3>\n\n";
               }
 
               // Track this message so we can remove it later

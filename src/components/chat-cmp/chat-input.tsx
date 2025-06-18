@@ -46,9 +46,16 @@ function ChatInput({
 }: ChatInputProps) {
   const params = useParams();
   const router = useRouter();
-  const { isLoading, error, sendMessage, clearMessages } = useStreamResponse();
-  const [input, setInput] = useState("");
-  const { setQuery, setMessages } = chatStore();
+  const { error, sendMessage, clearMessages } = useStreamResponse();
+  const {
+    setQuery,
+    setMessages,
+    isLoading,
+    query,
+    setIsRegenerate,
+    setIsWebSearch,
+    isWebSearch,
+  } = chatStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Cloudinary upload hook
@@ -63,9 +70,8 @@ function ChatInput({
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      if (!input.trim() || isLoading || uploadState.isUploading) return;
-      setQuery(input.trim());
-      setInput("");
+      if (!query.trim() || isLoading || uploadState.isUploading) return;
+      setQuery(query.trim());
       handleSubmit();
     }
   };
@@ -122,8 +128,9 @@ function ChatInput({
   };
 
   // Handle form submission
-  const handleSubmit = useCallback(async () => {
+  const handleSubmit = async () => {
     const generatedId = generateUUID();
+    setIsRegenerate(false);
     if (!params.chatid) {
       await createThread({ title: "New Thread", threadId: generatedId });
       setMessages([]);
@@ -135,30 +142,12 @@ function ChatInput({
       resetAttachment: handleRemoveAttachment,
     });
     handleRemoveAttachment();
-  }, [
-    isLoading,
-    sendMessage,
-    params.chatid,
-    generateUUID,
-    createThread,
-    router,
-    input,
-    attachmentUrl,
-  ]);
+  };
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isLoading || uploadState.isUploading) return;
-    setQuery(input.trim());
-    setInput("");
+    if (!query.trim() || isLoading || uploadState.isUploading) return;
     handleSubmit();
-  };
-
-  // Get file icon based on type
-  const getFileIcon = (type: string) => {
-    if (type.startsWith("image/")) return <Image className="h-4 w-4" />;
-    if (type.startsWith("pdf/")) return <File className="h-4 w-4" />;
-    return <FileText className="h-4 w-4" />;
   };
 
   return (
@@ -208,13 +197,13 @@ function ChatInput({
                 placeholder={placeholder}
                 autoFocus
                 id="chat-input"
-                value={input}
+                value={query}
                 className="w-full max-h-64 min-h-[54px] resize-none bg-transparent text-base leading-6 text-foreground outline-none placeholder:text-secondary-foreground/60 disabled:opacity-50 transition-opacity"
                 aria-label="Message input"
                 aria-describedby="chat-input-description"
                 autoComplete="off"
                 onKeyDown={handleKeyDown}
-                onChange={(e) => setInput(e.target.value)}
+                onChange={(e) => setQuery(e.target.value)}
                 disabled={uploadState.isUploading}
               />
               <div id="chat-input-description" className="sr-only">
@@ -233,7 +222,7 @@ function ChatInput({
                   size="icon"
                   disabled={
                     isLoading ||
-                    (!input.trim() && !attachmentUrl) ||
+                    (!query.trim() && !attachmentUrl) ||
                     uploadState.isUploading
                   }
                   className="transition-[opacity, translate-x] h-9 w-9 duration-200"
@@ -249,9 +238,18 @@ function ChatInput({
 
                   {/* Search Button */}
                   <Button
-                    variant="outline"
+                    type="button"
+                    variant={isWebSearch ? "default" : "outline"}
                     size="sm"
-                    className="bg-transparent hover:bg-muted/40 !rounded-full text-xs !h-auto py-1.5 !px-2"
+                    onClick={() => setIsWebSearch(!isWebSearch)}
+                    className={`
+                      ${
+                        isWebSearch
+                          ? "bg-primary"
+                          : "bg-transparent hover:bg-muted/40 "
+                      }
+                      !rounded-full text-xs !h-auto py-1.5 !px-2
+                      `}
                     aria-label={
                       isSearchEnabled
                         ? "Web search"

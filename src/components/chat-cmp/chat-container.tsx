@@ -6,12 +6,16 @@ import { RefreshCcw, SquarePen, Copy, Check, GitBranch } from "lucide-react";
 import chatStore from "@/stores/chat.store";
 import { getMessages } from "@/action/message.action";
 import { useIsMutating, useQuery } from "@tanstack/react-query";
-import { MessagePair } from "./message-container";
+import dynamic from "next/dynamic";
+const MessagePair = dynamic(
+  () => import("./message-container").then((mod) => mod.MessagePair),
+  { ssr: false }
+);
 
 const ChatContainer = () => {
   const params = useParams();
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { messages, setMessages, query, setQuery, isLoading } = chatStore();
+  const { messages, setMessages, query, setQuery, isLoading, isRegenerate } = chatStore();
 
   const { data } = useQuery({
     queryKey: ["thread-messages", params.chatid],
@@ -35,7 +39,9 @@ const ChatContainer = () => {
 
   // Scroll when response updates (streaming)
   useEffect(() => {
-    scrollToBottom();
+    if(!isRegenerate){
+      scrollToBottom();
+    }
   }, [isLoading, messages]);
 
   const isMutating = useIsMutating({ mutationKey: ["chat-stream"] });

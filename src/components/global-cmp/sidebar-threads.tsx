@@ -182,25 +182,9 @@ const SidebarThreads = () => {
     setNewTitle(thread.title)
     setRenameDialogOpen(true)
   }
-
-  // Render loading state
-  if (isLoading) {
+  if (error || isLoading) {
     return (
       <SidebarContent>
-        <div className="p-4 text-center text-muted-foreground">
-          Loading threads...
-        </div>
-      </SidebarContent>
-    )
-  }
-
-  // Render error state
-  if (error) {
-    return (
-      <SidebarContent>
-        <div className="p-4 text-center text-destructive">
-          Failed to load threads
-        </div>
       </SidebarContent>
     )
   }

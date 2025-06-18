@@ -36,7 +36,6 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 
 async function ChatLayoutContent({ children }: { children: React.ReactNode }) {
-
   const session = await auth()
   console.log(session?.user)
   
