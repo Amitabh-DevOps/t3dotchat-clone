@@ -305,7 +305,7 @@ const page = () => {
 
       {/* Action Buttons */}
       <div className="flex items-center justify-between">
-        <Button variant="outline" disabled size="sm" className="text-sm">
+        <Button variant="outline" disabled size="sm" className="text-sm md:block hidden">
           Filter by features
         </Button>
         <div className="flex gap-2">

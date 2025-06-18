@@ -88,9 +88,11 @@ async function ChatLayoutContent({ children }: { children: React.ReactNode }) {
           type="checkbox"
           name="sidebar-check"
         />
+        <Link href="/settings/subscription">
         <Button variant="ghost" size="icon">
           <LuSettings2 />
         </Button>
+        </Link>
         <ThemeToggle />
       </div>
     </div>
