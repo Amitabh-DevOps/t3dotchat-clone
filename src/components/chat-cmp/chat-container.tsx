@@ -11,8 +11,8 @@ const MessagePair = dynamic(
   () => import("./message-container").then((mod) => mod.MessagePair),
   { ssr: false }
 );
-import { branchThread } from "@/action/thread.action";
-import { toast } from "sonner";
+// import { branchThread } from "@/action/thread.action";
+// import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
 const ChatContainer = () => {
@@ -64,14 +64,7 @@ const ChatContainer = () => {
     navigator.clipboard.writeText(content);
   };
 
-  const handleBranch = async (messageId: string) => {
-    const response = await branchThread({ messageId: messageId });
-    if (response.error) {
-      toast.error(response?.error as string);
-    }
-    queryClient.invalidateQueries({ queryKey: ["threads"] });
-    router.push(`/chat/${response?.data?.threadId}`);
-  };
+
 
   return (
     <div
@@ -94,7 +87,7 @@ const ChatContainer = () => {
             onCopyUser={() => handleCopy(message.userQuery)}
             onRetryAI={() => handleRetry(`${message.id}-response`)}
             onCopyAI={() => handleCopy(message?.aiResponse?.[0]?.content || "")}
-            onBranchAI={() => handleBranch(`${message._id}`)}
+            // onBranchAI={() => handleBranch(`${message._id}`)}
           />
         ))}
     </div>

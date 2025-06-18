@@ -90,7 +90,7 @@ export function useStreamResponse(): UseStreamResponseReturn {
                 {
                   role: "assistant" as const,
                   content: [
-                    { type: "text", text: msg.aiResponse[0]?.content || "" },
+                    { type: "text", text: msg && msg.aiResponse && msg.aiResponse.length > 0 ? msg.aiResponse[0]?.content : "" },
                   ],
                 },
               ])
@@ -190,7 +190,6 @@ export function useStreamResponse(): UseStreamResponseReturn {
         errorState.setMessages(messagesWithoutOptimistic);
         setError(err instanceof Error ? err.message : "An error occurred");
       } finally {
-        setQuery("");
         setIsLoading(false);
       }
     },

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth, unstable_update as update } from "@/auth";
 import { codeVerifier } from "@/lib/code-challenge";
 import { updateOpenRouterApiKey } from "@/action/user.action";
+import { encrypt } from "@/lib/secure-pwd";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -33,16 +34,7 @@ export async function GET(req: NextRequest) {
     }
 
     const { key } = await response.json();
-
-    await update({
-      ...session,
-      user: {
-        ...session.user,
-        openRouterApiKey: key,
-      },
-    });
-
-    await updateOpenRouterApiKey(key);
+    await updateOpenRouterApiKey(encrypt(key));
 
     return NextResponse.redirect(new URL("/", req.url));
   } catch (err) {

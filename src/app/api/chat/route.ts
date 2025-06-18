@@ -6,6 +6,7 @@ import { GoogleGenAI, Modality } from "@google/genai";
 import axios from "axios";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { auth } from "@/auth";
+import { decrypt } from "@/lib/secure-pwd";
 
 const uploadToCloudinary = async (
   imageBuffer: Buffer,
@@ -159,11 +160,12 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+    console.log(decrypt(session?.user?.openRouterApiKey as string));
     const openrouter = createOpenRouter({
-      apiKey: session?.user?.openRouterApiKey,
+      apiKey: decrypt(session?.user?.openRouterApiKey as string),
     });  
     const result = streamText({
-      model: google("models/gemini-2.0-flash-exp"),
+      model: openrouter.chat("meta-llama/llama-3.1-405b-instruct"),
       messages: [{ role: "system", content: systemPrompt }, ...messages],
       temperature: 0.7,
       maxSteps: 3,
@@ -246,8 +248,6 @@ export async function POST(request: NextRequest) {
         }),
       },
     });
-
-    console.log("the result is", result)
 
     // Use a more reliable streaming approach
     const encoder = new TextEncoder();

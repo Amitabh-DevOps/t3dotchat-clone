@@ -15,30 +15,29 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Plus } from 'lucide-react'
-import { getUser } from '@/action/user.action'
 import { updateOpenRouterApiKey } from '@/action/user.action'
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from 'sonner'
+import userStore from '@/stores/user.store'
+import { encrypt } from '@/lib/secure-pwd'
 
 const page = () => {
   const [open, setOpen] = useState(false)
   const [apiKey, setApiKey] = useState("")
   const queryClient = useQueryClient()
+  const {userData} = userStore()
 
-  const { data: user, isLoading } = useQuery({
-    queryKey: ['user'],
-    queryFn: () => getUser(),
-  })
 
   // Set the API key when user data is loaded
   useEffect(() => {
-    if (user?.data?.openRouterApiKey) {
-      setApiKey(user.data.openRouterApiKey)
+    if (userData?.openRouterApiKey) {
+      console.log(userData.openRouterApiKey)
+      setApiKey(userData.openRouterApiKey)
     }
-  }, [user?.data?.openRouterApiKey])
+  }, [userData?.openRouterApiKey])
 
   const { mutate: updateOpenRouterApiKeyMutation } = useMutation({
-    mutationFn: (apiKey: string) => updateOpenRouterApiKey(apiKey),
+    mutationFn: (apiKey: string) => updateOpenRouterApiKey(encrypt(apiKey)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user'] })
       toast.success('API key updated successfully')

@@ -4,6 +4,35 @@ import { serializeData } from "@/lib/constant";
 import User from "@/models/user.model";
 import { auth } from "@/auth";
 import { unstable_update as update } from "@/auth";
+import { encrypt } from "@/lib/secure-pwd";
+
+export const updateKey = async (data: any) => {
+  const session = await auth();
+  if (!session?.user || !data) {
+    return {
+      data: null,
+      error: "Unauthorized",
+    };
+  }
+  try {
+    await update({
+      user: {
+        ...session.user,
+        openRouterApiKey: data.openRouterApiKey,
+      },
+    });
+    return {
+      data: serializeData(session.user),
+      error: null,
+    };
+  } catch (error: any) {
+    console.log(error);
+    return {
+      data: null,
+      error: error,
+    };
+  }
+};
 
 export const getUser = async () => {
   const session = await auth();
@@ -26,7 +55,6 @@ export const getUser = async () => {
         error: "User not found",
       };
     }
-
     return {
       data: serializeData(user),
       error: null,
@@ -126,16 +154,8 @@ export const updateOpenRouterApiKey = async (key: string) => {
       };
     }
 
-    user.openRouterApiKey = key;
-
+    user.openRouterApiKey = encrypt(key);
     const updatedUser = await user.save();
-    await update({
-      user: {
-        ...session.user,
-        openRouterApiKey: updatedUser.openRouterApiKey,
-      },
-    });
-
     return {
       data: serializeData(updatedUser),
       error: null,
@@ -146,7 +166,7 @@ export const updateOpenRouterApiKey = async (key: string) => {
       error: error.message,
     };
   }
-}
+};
 
 export const updateModels = async ({
   selected,
@@ -194,7 +214,7 @@ export const updateModels = async ({
       error: error.message,
     };
   }
-}
+};
 
 // this action will implement later
 export const addApiKey = async ({

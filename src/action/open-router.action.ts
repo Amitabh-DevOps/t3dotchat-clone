@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { codeVerifier } from "@/lib/code-challenge";
 import { getUser } from "./user.action";
 import connectDB from "@/config/db";
+import { decrypt } from "@/lib/secure-pwd";
 
 export const connectToOpenRouter = async (code: string) => {
   const session = await auth();
@@ -48,13 +49,14 @@ export const getCredit = async () => {
   try {
     await connectDB();
     const user = await getUser();
-    if (!user) {
+    if (!user.data) {
       return {
         data: null,
-        error: "User not found",
+        error: user.error,
       };
     }
-    const apiKey = user.data.openRouterApiKey;
+    console.log(user, "me who am i");
+    const apiKey = decrypt(user?.data?.openRouterApiKey as string);
 
     const url = "https://openrouter.ai/api/v1/credits";
     const options = {
