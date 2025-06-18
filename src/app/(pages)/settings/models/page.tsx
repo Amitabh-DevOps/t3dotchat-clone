@@ -41,7 +41,7 @@ const ModelCard: React.FC<ModelCardProps> = ({
   providerIcon
 }) => {
   return (
-    <Card className="border border-border/50 bg-card hover:bg-card/80 transition-colors">
+    <Card className="border border-border/50 bg-card hover:bg-card/80 ">
       <CardContent className="p-6">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 space-y-3">
@@ -69,13 +69,13 @@ const ModelCard: React.FC<ModelCardProps> = ({
                 </Badge>
               ))}
               
-              {/* Search URL Link */}
+              {/* Search URL Link
               {hasSearchUrl && (
-                <button className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors ml-auto">
+                <button className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground ml-auto">
                   <ExternalLink className="w-3 h-3" />
                   Search URL
                 </button>
-              )}
+              )} */}
             </div>
           </div>
 
@@ -172,8 +172,6 @@ const page = () => {
       if (error) {
         throw new Error(error)
       }
-
-      toast.success('Model selection updated successfully')
     } catch (error) {
       console.error('Error updating models:', error)
       toast.error('Failed to update model selection')
@@ -240,7 +238,6 @@ const page = () => {
         throw new Error(error)
       }
       
-      toast.success('All recommended models selected')
     } catch (error) {
       console.error('Error selecting recommended models:', error)
       toast.error('Failed to select recommended models')
@@ -266,7 +263,6 @@ const page = () => {
         throw new Error(error)
       }
       
-      toast.success('All models unselected')
     } catch (error) {
       console.error('Error unselecting models:', error)
       toast.error('Failed to unselect models')
@@ -309,7 +305,7 @@ const page = () => {
 
       {/* Action Buttons */}
       <div className="flex items-center justify-between">
-        <Button variant="outline" size="sm" className="text-sm">
+        <Button variant="outline" disabled size="sm" className="text-sm">
           Filter by features
         </Button>
         <div className="flex gap-2">

@@ -9,6 +9,8 @@ import { Button } from "../ui/button";
 import { AlertTriangle, Info } from "lucide-react";
 import Link from "next/link";
 import { getCredit } from "@/action/open-router.action";
+import { redirect } from "next/navigation";
+import { updateOpenRouterApiKey } from "@/action/user.action";
 
 const Profile = async () => {
   const [userData, creditData] = await Promise.all([
