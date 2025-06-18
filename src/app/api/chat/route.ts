@@ -63,12 +63,12 @@ const generateImage = async (prompt: string) => {
     let generatedText = "";
     let imageUrl = "";
 
-    for (const part of response.candidates[0].content.parts) {
-      if (part.text) {
-        generatedText = part.text;
-      } else if (part.inlineData) {
-        const imageData = part.inlineData.data;
-        const buffer = Buffer.from(imageData, "base64");
+    for (const part of response?.candidates?.[0]?.content?.parts || []) {
+      if (part?.text) {
+        generatedText = part?.text;
+      } else if (part?.inlineData) {
+        const imageData = part?.inlineData?.data;
+        const buffer = Buffer.from(imageData || "", "base64");
 
         // Generate unique filename
         const filename = `gemini-generated-${Date.now()}.png`;
@@ -161,7 +161,7 @@ export async function POST(request: NextRequest) {
     }
     const openrouter = createOpenRouter({
       apiKey: session?.user?.openRouterApiKey,
-    });
+    });  
     const result = streamText({
       model: google("models/gemini-2.0-flash-exp"),
       messages: [{ role: "system", content: systemPrompt }, ...messages],
@@ -246,6 +246,8 @@ export async function POST(request: NextRequest) {
         }),
       },
     });
+
+    console.log("the result is", result)
 
     // Use a more reliable streaming approach
     const encoder = new TextEncoder();

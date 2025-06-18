@@ -13,7 +13,7 @@ export const useUpdateUser = () => {
     queryClient.setQueryData(['user'], (oldData: User | undefined) => {
       if (!oldData) return oldData;
       return {
-        data: { ...oldData.data, ...updatedData },
+        data: { ...oldData, ...updatedData },
         error: null,
       };
     });

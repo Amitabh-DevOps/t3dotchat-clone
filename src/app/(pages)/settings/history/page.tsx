@@ -11,7 +11,7 @@ const page = async () => {
   return (
     <div className="p-4">
       <MessageHistory data={data} />
-      <DangerZone />
+      {/* <DangerZone /> */}
     </div>
   )
 }

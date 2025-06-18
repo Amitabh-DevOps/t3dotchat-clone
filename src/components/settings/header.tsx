@@ -3,6 +3,7 @@ import { Button } from "../ui/button";
 import { ArrowLeft, Sun } from "lucide-react";
 import ThemeToggle from "../global-cmp/theme-toggle";
 import Link from "next/link";
+import Logout from "../logout";
 
 const Header = () => {
   return (
@@ -15,9 +16,11 @@ const Header = () => {
       </Link>
       <div className="flex gap-2">
         <ThemeToggle />
-        <Button variant="ghost" className="">
-          Sign out
-        </Button>
+        <Logout>
+          <Button variant="ghost" className="">
+            Sign out
+          </Button>
+        </Logout>
       </div>
     </div>
   );

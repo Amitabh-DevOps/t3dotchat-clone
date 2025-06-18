@@ -109,14 +109,14 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
       if (generateResponse.error) {
         toast.error("Failed to regenerate response");
       }
-      if (response.trim() !== "") {
-        chatStore.setState({
-          messages: messages.map((message) => {
+      if (response?.trim() !== "") {
+        chatStore?.setState({
+          messages: messages?.map((message: Message) => {
             if (message._id === messageId) {
               return {
                 ...message,
                 aiResponse: [
-                  ...message.aiResponse,
+                  ...(message?.aiResponse || []),
                   { content: response, model: "gpt-3.5-turbo" },
                 ],
               };

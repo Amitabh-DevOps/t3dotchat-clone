@@ -5,18 +5,23 @@ import { Button } from "@/components/ui/button";
 import { RefreshCcw, SquarePen, Copy, Check, GitBranch } from "lucide-react";
 import chatStore from "@/stores/chat.store";
 import { getMessages } from "@/action/message.action";
-import { useIsMutating, useQuery } from "@tanstack/react-query";
+import { useIsMutating, useQuery, useQueryClient } from "@tanstack/react-query";
 import dynamic from "next/dynamic";
 const MessagePair = dynamic(
   () => import("./message-container").then((mod) => mod.MessagePair),
   { ssr: false }
 );
+import { branchThread } from "@/action/thread.action";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const ChatContainer = () => {
   const params = useParams();
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { messages, setMessages, query, setQuery, isLoading, isRegenerate } = chatStore();
-
+  const { messages, setMessages, query, setQuery, isLoading, isRegenerate } =
+    chatStore();
+  const router = useRouter();
+  const queryClient = useQueryClient();
   const { data } = useQuery({
     queryKey: ["thread-messages", params.chatid],
     queryFn: async () => {
@@ -39,7 +44,7 @@ const ChatContainer = () => {
 
   // Scroll when response updates (streaming)
   useEffect(() => {
-    if(!isRegenerate){
+    if (!isRegenerate) {
       scrollToBottom();
     }
   }, [isLoading, messages]);
@@ -59,8 +64,13 @@ const ChatContainer = () => {
     navigator.clipboard.writeText(content);
   };
 
-  const handleBranch = (messageId?: string) => {
-    console.log("Branch:", messageId);
+  const handleBranch = async (messageId: string) => {
+    const response = await branchThread({ messageId: messageId });
+    if (response.error) {
+      toast.error(response?.error as string);
+    }
+    queryClient.invalidateQueries({ queryKey: ["threads"] });
+    router.push(`/chat/${response?.data?.threadId}`);
   };
 
   return (
@@ -84,7 +94,7 @@ const ChatContainer = () => {
             onCopyUser={() => handleCopy(message.userQuery)}
             onRetryAI={() => handleRetry(`${message.id}-response`)}
             onCopyAI={() => handleCopy(message?.aiResponse?.[0]?.content || "")}
-            onBranchAI={() => handleBranch(`${message.id}-response`)}
+            onBranchAI={() => handleBranch(`${message._id}`)}
           />
         ))}
     </div>
