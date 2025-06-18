@@ -6,8 +6,10 @@ import { codeToHtml, createCssVariablesTheme, createHighlighter } from "shiki";
 import { renderToString } from "react-dom/server";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
+import { BiSolidMessageRoundedError } from "react-icons/bi";
 import { LuCopy, LuText } from "react-icons/lu";
 import { FiLoader } from "react-icons/fi";
+import Link from "next/link";
 
 // T3 Tag Processor (FIXED VERSION)
 export const processSpecificT3Tags = async (
@@ -183,11 +185,20 @@ export const processSpecificT3Tags = async (
     </div>
   `;
     },
-    t3: (element: any) => {
+    "t3-init-tool": (element: any) => {
       const content = element.textContent;
 
       return `
         <div class="p-3 px-4 bg-background t3-tool-loader w-fit flex items-center gap-2 rounded-xl">${content} ${renderToString(<FiLoader className="animate-spin" />)}</div>
+      `;
+    },
+    "t3-error": (element: any) => {
+      const content = element.textContent;
+
+      return `
+        <div class="p-3 text-white px-4 bg-primary border border-primary/50 t3-tool-loader w-fit flex items-center gap-2 rounded-xl"> ${renderToString(<BiSolidMessageRoundedError className="text-2xl" />)} ${content}
+        ${renderToString(<Link target="_blank" href="https://openrouter.ai/" className="text-white">Visit Now</Link>)}
+        </div>
       `;
     },
   };

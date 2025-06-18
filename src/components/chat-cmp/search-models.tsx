@@ -21,13 +21,14 @@ import {
 import { cn } from "@/lib/utils";
 import { LuChevronDown, LuFilter } from "react-icons/lu";
 import ModelFilters from "./model-filters";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery } from '@tanstack/react-query';
 import { openRouterModelsQueryOptions } from '@/service/open-router';
 import { getProviderIcon } from '@/lib/provider-icons';
 import userStore from "@/stores/user.store";
 import { useRouter } from "next/navigation";
 import SidebarLogo from "../global-cmp/sidebar-logo";
+import { toast } from "sonner";
 
 // Define interfaces
 interface ModelCapability {
@@ -57,7 +58,6 @@ const ModelCard: React.FC<{
 
   return (
     <div className="group relative">
-      <div className="absolute -left-1.5 -top-1.5 z-10 rounded-full bg-popover p-0.5" />
       <Button
         variant="outline"
         className={cn(
@@ -122,15 +122,37 @@ const ModelCard: React.FC<{
   );
 };
 
-// Rest of the SearchModels component remains unchanged
 export default function SearchModels() {
   const router = useRouter();
   const [isAll, setIsAll] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const popoverRef = useRef<HTMLDivElement>(null);
   
-  const { userData } = userStore();
+  const { userData, currentModel, setCurrentModel } = userStore();
   
-  const { data: openRouterModels, isLoading, error } = useQuery(openRouterModelsQueryOptions);
+  // Fetch data only when popover is open
+  const { data: openRouterModels, isLoading, error } = useQuery({
+    ...openRouterModelsQueryOptions,
+    enabled: isModalOpen, // Only fetch when modal is open
+  });
+
+  // Handle clicking outside the popover
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
+        setIsModalOpen(false);
+      }
+    };
+
+    if (isModalOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isModalOpen]);
 
   const getModelCapabilities = (model: any): ModelCapability[] => {
     const capabilities: ModelCapability[] = [];
@@ -165,7 +187,6 @@ export default function SearchModels() {
   const processedModels: ProcessedModel[] = (openRouterModels?.data || []).map((model: any) => {
     const selectedModels = userData?.models?.selected || [];
     
-    
     return {
       id: model.id,
       name: model.name,
@@ -182,35 +203,50 @@ export default function SearchModels() {
   );
 
   const handleModelSelect = (modelId: string) => {
-    console.log('Selected model:', modelId);
+    setCurrentModel(modelId); // Set current model first
+    toast.success(`${modelId} model selected successfully`);
+    setIsModalOpen(false); // Close modal after selection
   };
 
-  const currentModel = processedModels.find(model => model.isActive)?.name || "Select Model";
-
-  if (isLoading) {
+  if (isLoading && isModalOpen) {
     return (
-      <Button size="sm" variant="ghost" className="gap-2" disabled>
-        Loading... <LuChevronDown />
-      </Button>
+      <Popover open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <PopoverTrigger asChild>
+          <Button onClick={() => setIsModalOpen(true)} size="sm" variant="ghost" className="gap-2">
+            <span className="max-w-[100px] truncate">{currentModel || "google/gemini-2.5-flash"}</span> <LuChevronDown />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[200px] p-4">
+          <div className="text-center">Loading models...</div>
+        </PopoverContent>
+      </Popover>
     );
   }
 
-  if (error) {
+  if (error && isModalOpen) {
     return (
-      <Button size="sm" variant="ghost" className="gap-2" disabled>
-        Error <LuChevronDown />
-      </Button>
+      <Popover open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <PopoverTrigger asChild>
+          <Button onClick={() => setIsModalOpen(true)} size="sm" variant="ghost" className="gap-2">
+            <span className="max-w-[100px] truncate">{currentModel || "google/gemini-2.5-flash"}</span> <LuChevronDown />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[200px] p-4">
+          <div className="text-center text-red-500">Error loading models</div>
+        </PopoverContent>
+      </Popover>
     );
   }
 
   return (
-    <Popover>
+    <Popover open={isModalOpen} onOpenChange={setIsModalOpen}>
       <PopoverTrigger asChild>
-        <Button size="sm" variant="ghost" className="gap-2">
-          {currentModel} <LuChevronDown />
+        <Button onClick={() => setIsModalOpen(true)} size="sm" variant="ghost" className="gap-2">
+          <span className="max-w-[100px] truncate">{currentModel || "google/gemini-2.5-flash"}</span> <LuChevronDown />
         </Button>
       </PopoverTrigger>
       <PopoverContent
+        ref={popoverRef}
         className={cn(
           "min-w-[8rem]",
           "max-w-[calc(100vw-2rem)] !h-fit transition-all p-2 py-1 flex flex-col gap-2 max-sm:mx-4 max-h-[calc(100vh-80px)]",
@@ -255,6 +291,7 @@ export default function SearchModels() {
                 <Pin className="lucide lucide-pin mt-px size-4" />
                 Favorites
               </div>
+              <div className="grid md:grid-cols-5 gap-4">
               {filteredModels.map((model) => (
                 <ModelCard
                   key={model.id}
@@ -262,6 +299,7 @@ export default function SearchModels() {
                   onClick={() => handleModelSelect(model.id)}
                 />
               ))}
+              </div>
             </div>
           ) : (
             filteredModels.map((model) => (
@@ -315,4 +353,4 @@ export default function SearchModels() {
       </PopoverContent>
     </Popover>
   );
-} 
+}

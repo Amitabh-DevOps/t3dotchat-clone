@@ -14,7 +14,7 @@ export default function QueryProvider({
 
   const setUser = async () => {
    const user = await getUser();
-   await await updateKey(user.data ? user.data : null);
+   updateKey(user.data ? user.data : null);
    setUserData(user.data ? user.data : null);
   };
   useEffect(() => {

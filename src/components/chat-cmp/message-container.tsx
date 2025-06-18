@@ -245,11 +245,11 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
         </Button>
       )}
 
-      {modelName && (
+      {/* {modelName && (
         <div className="flex items-center gap-1 text-xs text-muted-foreground">
           <span>{modelName}</span>
         </div>
-      )}
+      )} */}
     </div>
   );
 };
