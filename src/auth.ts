@@ -24,6 +24,9 @@ const findOrCreateOAuthUser = async ({
     email,
     image,
     openRouterApiKey,
+    models:{
+      selected:["google/gemini-2.5-flash","google/gemini-2.5-pro","google/gemini-2.5-flash-lite-preview-06-17"]
+    }
   });
   return newUser;
 };

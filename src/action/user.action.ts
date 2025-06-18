@@ -170,10 +170,8 @@ export const updateOpenRouterApiKey = async (key: string) => {
 
 export const updateModels = async ({
   selected,
-  favorite,
 }: {
   selected?: string[];
-  favorite?: string[];
 }) => {
   const session = await auth();
 
@@ -197,9 +195,6 @@ export const updateModels = async ({
 
     if (selected !== undefined) {
       user.models.selected = selected;
-    }
-    if (favorite !== undefined) {
-      user.models.favorite = favorite;
     }
 
     await user.save();

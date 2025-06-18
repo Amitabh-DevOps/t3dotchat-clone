@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import chatStore from "@/stores/chat.store";
 import { createMessage } from "@/action/message.action";
+import userStore from "@/stores/user.store";
 
 interface Message {
   _id?: string;
@@ -35,7 +36,7 @@ interface UseStreamResponseReturn {
 export function useStreamResponse(): UseStreamResponseReturn {
   const { isLoading, setIsLoading } = chatStore();
   const [error, setError] = useState<string | null>(null);
-
+  
   const sendMessage = useCallback(
     async ({
       chatid,
@@ -46,8 +47,8 @@ export function useStreamResponse(): UseStreamResponseReturn {
       attachmentUrl?: string;
       resetAttachment?: () => void;
     }) => {
+      const {currentModel} = userStore.getState()      
       const { query, messages, setMessages, setQuery, isWebSearch } = chatStore.getState();
-
       if (!query?.trim() || isLoading) return;
       const trimmedQuery = query.trim();
       setQuery("");
@@ -69,7 +70,7 @@ export function useStreamResponse(): UseStreamResponseReturn {
         userQuery: trimmedQuery,
         attachment: attachment || undefined,
         isSearch: isWebSearch,
-        aiResponse: [{ content: "", model: "Gemini 2.5 Flash" }],
+        aiResponse: [{ content: "", model: currentModel }],
         isPending: true,
         createdAt: new Date(),
       };
@@ -148,7 +149,7 @@ export function useStreamResponse(): UseStreamResponseReturn {
               ? {
                   ...msg,
                   aiResponse: [
-                    { content: assistantResponse, model: "Gemini 2.5 Flash" },
+                    { content: assistantResponse, model: currentModel },
                   ],
                 }
               : msg
@@ -162,7 +163,7 @@ export function useStreamResponse(): UseStreamResponseReturn {
           userQuery: trimmedQuery, // Use trimmedQuery instead of query
           attachment: attachment,
           aiResponse: [
-            { content: assistantResponse, model: "Gemini 2.5 Flash" },
+            { content: assistantResponse, model: currentModel },
           ],
         });
 
