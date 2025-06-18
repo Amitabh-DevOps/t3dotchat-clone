@@ -14,6 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Upload, Download, Trash2 } from "lucide-react";
+import { TbPinFilled } from "react-icons/tb";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { bulkDeleteThread } from "@/action/thread.action";
 import { toast } from "sonner";
@@ -132,12 +133,13 @@ const MessageHistory = ({ data }: MessageHistoryProps) => {
           variant="outline"
           size="sm"
           id="select-all"
+          onClick={handleSelectAll}
           className="flex items-center space-x-2"
         >
           <Checkbox id="select-all" onCheckedChange={handleSelectAll} checked={allSelected} />
           <label
             htmlFor="select-all"
-            className="text-sm font-medium text-foreground cursor-pointer"
+            className="text-sm text-foreground cursor-pointer"
           >
             Select All
           </label>
@@ -160,10 +162,10 @@ const MessageHistory = ({ data }: MessageHistoryProps) => {
             size="sm"
             onClick={handleDelete}
             disabled={selectedMessages.length === 0 || bulkDeleteMutation.isPending}
-            className="flex items-center space-x-2 text-destructive hover:text-destructive"
+            className="flex items-center space-x-2"
           >
-            <Trash2 className="h-4 w-4" />
-            <span className="md:block hidden">{bulkDeleteMutation.isPending ? "Deleting..." : "Delete"}</span>
+            <Trash2 className="h-4 w-4 text-destructive" />
+            <span className="md:block font-medium hidden">{bulkDeleteMutation.isPending ? "Deleting..." : "Delete"}</span>
           </Button>
 
           <Button
@@ -187,18 +189,13 @@ const MessageHistory = ({ data }: MessageHistoryProps) => {
                   key={message.id}
                   className="hover:bg-accent/50 transition-colors"
                 >
-                  <td className="py-2 px-4">
-                    <Checkbox
-                      id={`message-${message.id}`}
-                      checked={selectedMessages.includes(message.id)}
-                      onCheckedChange={() => handleMessageSelect(message.id)}
-                    />
-                  </td>
-                  <td className="py-2 px-4">
-                    <div className="flex items-center space-x-2">
-                      {message.isPinned && (
-                        <div className="w-2 h-2 bg-pink-500 rounded-full flex-shrink-0" />
-                      )}
+                  <td className="py-2 px-4" colSpan={2}>
+                    <div className="flex items-center space-x-3">
+                      <Checkbox
+                        id={`message-${message.id}`}
+                        checked={selectedMessages.includes(message.id)}
+                        onCheckedChange={() => handleMessageSelect(message.id)}
+                      />
                       <label
                         htmlFor={`message-${message.id}`}
                         className="text-sm font-medium text-foreground cursor-pointer"
@@ -208,9 +205,14 @@ const MessageHistory = ({ data }: MessageHistoryProps) => {
                     </div>
                   </td>
                   <td className="py-2 px-4 text-right">
-                    <span className="text-sm text-muted-foreground">
-                      {message.timestamp}
-                    </span>
+                    <div className="flex items-center justify-end space-x-2">
+                      {message.isPinned && (
+                        <TbPinFilled className="h-4 w-4 text-pink-500 flex-shrink-0" />
+                      )}
+                      <span className="text-sm text-muted-foreground">
+                        {message.timestamp}
+                      </span>
+                    </div>
                   </td>
                 </tr>
               ))}
