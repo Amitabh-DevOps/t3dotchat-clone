@@ -125,8 +125,8 @@ const SidebarThreads = () => {
   const renameMutation = useMutation({
     mutationFn: async ({ threadId, title }: { threadId: string, title: string }) => {
       const result = await renameThread({ threadId, title })
-      if (result.error) {
-        throw new Error(result.error)
+      if (result?.error) {
+        throw new Error(result?.error as string)
       }
       return result.data
     },
@@ -283,11 +283,11 @@ const SidebarThreads = () => {
       <SidebarContent>
         <SidebarGroup>
               <SidebarMenu>
-                {searchedThreads.map((thread) => (
+                {searchedThreads.map((thread: any) => (
                   <ThreadItem 
                     key={thread.threadId} 
                     thread={thread as any} 
-                    showBranchIcon={thread.parentChatId !== null}
+                      showBranchIcon={thread?.parentChatId !== null}
                   />
                 ))}
               </SidebarMenu>

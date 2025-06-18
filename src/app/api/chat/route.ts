@@ -63,12 +63,12 @@ const generateImage = async (prompt: string) => {
     let generatedText = "";
     let imageUrl = "";
 
-    for (const part of response.candidates[0].content.parts) {
-      if (part.text) {
-        generatedText = part.text;
-      } else if (part.inlineData) {
-        const imageData = part.inlineData.data;
-        const buffer = Buffer.from(imageData, "base64");
+    for (const part of response?.candidates?.[0]?.content?.parts || []) {
+      if (part?.text) {
+        generatedText = part?.text;
+      } else if (part?.inlineData) {
+        const imageData = part?.inlineData?.data;
+        const buffer = Buffer.from(imageData || "", "base64");
 
         // Generate unique filename
         const filename = `gemini-generated-${Date.now()}.png`;
