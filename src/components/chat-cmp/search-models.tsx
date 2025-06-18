@@ -26,6 +26,8 @@ import { useQuery } from '@tanstack/react-query';
 import { openRouterModelsQueryOptions } from '@/service/open-router';
 import { getProviderIcon } from '@/lib/provider-icons';
 import userStore from "@/stores/user.store";
+import { useRouter } from "next/navigation";
+import SidebarLogo from "../global-cmp/sidebar-logo";
 
 // Define interfaces
 interface ModelCapability {
@@ -122,6 +124,7 @@ const ModelCard: React.FC<{
 
 // Rest of the SearchModels component remains unchanged
 export default function SearchModels() {
+  const router = useRouter();
   const [isAll, setIsAll] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   
@@ -161,6 +164,7 @@ export default function SearchModels() {
 
   const processedModels: ProcessedModel[] = (openRouterModels?.data || []).map((model: any) => {
     const selectedModels = userData?.models?.selected || [];
+    
     
     return {
       id: model.id,
@@ -233,17 +237,14 @@ export default function SearchModels() {
         <div className="max-h-full flex-1 overflow-y-scroll px-1.5">
           <div className="rounded-xl text-card-foreground border-0 bg-popover py-2.5">
             <div className="flex flex-col space-y-3 rounded-md bg-popover background-reflect border-reflect p-5">
-              <h3 className="text-xl font-semibold">
-                Unlock all models + higher limits
+              <h3 className="text-lg font-semibold">
+                Unlock 100+ LLM models using
               </h3>
               <div className="flex items-end justify-between">
                 <div className="flex items-baseline gap-1">
-                  <span className="text-3xl font-bold text-primary">$8</span>
-                  <span className="text-primary dark:text-primary-foreground">
-                    /month
-                  </span>
+                  <SidebarLogo className="text-wordmark-color"/>
                 </div>
-                <Button variant="t3">Upgrade now</Button>
+              { !userData && <Button onClick={() => router.push("/auth")} variant="t3">Login</Button>}
               </div>
             </div>
           </div>

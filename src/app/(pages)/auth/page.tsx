@@ -30,7 +30,7 @@ const AuthPage = async () => {
       </div>
       <h1 className="mb-5 h-5 text-xl font-bold text-foreground flex items-center gap-2">
         Welcome to
-        <SidebarLogo className="!h-5" />
+        <SidebarLogo className="text-wordmark-color" />
       </h1>
       <div className="mb-8 text-center text-muted-foreground">
         <p className="">

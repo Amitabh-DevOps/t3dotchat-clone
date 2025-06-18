@@ -6,6 +6,7 @@ import DevInput from "./dev-input";
 import { useDebounce } from "@/hooks/use-debounce";
 import { searchThread } from "@/action/thread.action";
 import { useQuery } from "@tanstack/react-query";
+import userStore from "@/stores/user.store";
 
 interface Thread {
   _id: string;
@@ -18,6 +19,7 @@ interface Thread {
 
 const SidebarSearch = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const { userData } = userStore();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -37,7 +39,7 @@ const SidebarSearch = () => {
       }
       return result.data as Thread[];
     },
-    enabled: debouncedSearchQuery.length > 0,
+    enabled: debouncedSearchQuery.length > 0 && !userData,
     staleTime: 1000 * 60 * 5,
   });
 
