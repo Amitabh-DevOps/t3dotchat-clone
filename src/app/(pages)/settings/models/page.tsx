@@ -4,10 +4,12 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Eye, FileText, Search, Zap, ExternalLink } from 'lucide-react'
-import { llmModels } from '@/lib/llm-model'
+import { Eye, FileText, Search, Zap, ExternalLink, Bot } from 'lucide-react'
 import { getUser, updateModels } from '@/action/user.action'
+import { openRouterModelsQueryOptions } from '@/service/open-router'
+import { useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner' // assuming you're using sonner for toasts
+import { getProviderIcon } from '@/lib/provider-icons'
 
 interface ModelBadge {
   icon: React.ReactNode
@@ -24,6 +26,7 @@ interface ModelCardProps {
   hasSearchUrl?: boolean
   showMore?: boolean
   modelKey: string
+  providerIcon: React.ReactNode
 }
 
 const ModelCard: React.FC<ModelCardProps> = ({
@@ -34,7 +37,8 @@ const ModelCard: React.FC<ModelCardProps> = ({
   onToggle,
   hasSearchUrl = false,
   showMore = false,
-  modelKey
+  modelKey,
+  providerIcon
 }) => {
   return (
     <Card className="border border-border/50 bg-card hover:bg-card/80 transition-colors">
@@ -43,23 +47,14 @@ const ModelCard: React.FC<ModelCardProps> = ({
           <div className="flex-1 space-y-3">
             {/* Model Icon and Name */}
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <div className="w-4 h-4 bg-white rounded-sm transform rotate-45"></div>
-              </div>
+              {providerIcon}
               <h3 className="text-lg font-semibold text-foreground">{name}</h3>
             </div>
 
-            {/* Description */}
-            <p className="text-sm text-muted-foreground leading-relaxed">
+            {/* Description - Limited to 2 lines */}
+            <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
               {description}
             </p>
-
-            {/* Show More Link */}
-            {showMore && (
-              <button className="text-sm text-primary hover:text-primary/80 transition-colors">
-                Show more
-              </button>
-            )}
 
             {/* Badges */}
             <div className="flex items-center gap-2 flex-wrap">
@@ -98,26 +93,18 @@ const ModelCard: React.FC<ModelCardProps> = ({
   )
 }
 
-// Helper function to create model ID
-const createModelId = (providerId: string, modelIndex: number) => {
-  return `${providerId}[${modelIndex}]`
-}
 
-// Helper function to parse model ID
-const parseModelId = (modelId: string) => {
-  const match = modelId.match(/^(#\d+)\[(\d+)\]$/)
-  if (match) {
-    return { providerId: match[1], modelIndex: parseInt(match[2]) }
-  }
-  return null
-}
+
+// Helper function to create model ID from OpenRouter data
+const createModelId = (modelId: string) => modelId
 
 const page = () => {
   const [filters, setFilters] = useState<Record<string, boolean>>({})
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState(false)
+  const { data: openRouterModels, isLoading: isLoadingOpenRouterModels, error: errorOpenRouterModels } = useQuery(openRouterModelsQueryOptions)
 
-  // Initialize state from user data and llmModels
+  // Initialize state from user data and OpenRouter models
   useEffect(() => {
     const initializeState = async () => {
       try {
@@ -128,24 +115,18 @@ const page = () => {
           return
         }
 
-        console.log("user", user)
+        if (!openRouterModels?.data) return
 
         const initialFilters: Record<string, boolean> = {}
         
         // Get user's selected models
         const userSelectedModels = user?.models?.selected || []
 
-        // Initialize all models with their states
-        llmModels.forEach((provider, providerIndex) => {
-          provider.models.forEach((model, modelIndex) => {
-            const modelId = createModelId(provider.id, modelIndex)
-            
-            // Check if this model is selected by user
-            initialFilters[model.key] = userSelectedModels.includes(modelId)
-          })
+        // Initialize all OpenRouter models with their states
+        openRouterModels.data.forEach((model: any) => {
+          // Check if this model is selected by user
+          initialFilters[model.id] = userSelectedModels.includes(model.id)
         })
-
-        console.log("initialFilters", initialFilters)
 
         setFilters(initialFilters)
       } catch (error) {
@@ -156,8 +137,10 @@ const page = () => {
       }
     }
 
-    initializeState()
-  }, [])
+    if (openRouterModels?.data) {
+      initializeState()
+    }
+  }, [openRouterModels])
 
   const handleToggle = (modelKey: string) => async (enabled: boolean) => {
     setFilters(prev => ({ ...prev, [modelKey]: enabled }))
@@ -169,45 +152,19 @@ const page = () => {
     
     setUpdating(true)
     try {
-      // Find the model in llmModels to get its ID
-      let modelId = ''
-      
-      llmModels.forEach((provider, providerIndex) => {
-        provider.models.forEach((model, modelIndex) => {
-          if (model.key === modelKey) {
-            modelId = createModelId(provider.id, modelIndex)
-          }
-        })
-      })
-
-      if (!modelId) {
-        throw new Error('Model not found')
-      }
-
       // Get current selected models
       const currentSelected = Object.entries(filters)
         .filter(([key, selected]) => selected)
-        .map(([key]) => {
-          // Find model ID for this key
-          let id = ''
-          llmModels.forEach((provider, providerIndex) => {
-            provider.models.forEach((model, modelIndex) => {
-              if (model.key === key) {
-                id = createModelId(provider.id, modelIndex)
-              }
-            })
-          })
-          return id
-        })
+        .map(([key]) => key)
         .filter(Boolean)
 
       // Update the selected array
       let newSelected = [...currentSelected]
 
-      if (value && !newSelected.includes(modelId)) {
-        newSelected.push(modelId)
+      if (value && !newSelected.includes(modelKey)) {
+        newSelected.push(modelKey)
       } else if (!value) {
-        newSelected = newSelected.filter(id => id !== modelId)
+        newSelected = newSelected.filter(id => id !== modelKey)
       }
 
       const { error } = await updateModels({ selected: newSelected })
@@ -228,37 +185,52 @@ const page = () => {
     }
   }
 
-  // Map the imported llmModels data to the component format
-  const models = llmModels.flatMap(provider => 
-    provider.models.map(model => ({
-      name: model.name,
-      description: model.description,
-      badges: [
-        { icon: <Eye className="w-3 h-3" />, label: "Vision" },
-        { icon: <FileText className="w-3 h-3" />, label: "PDFs" },
-        { icon: <Search className="w-3 h-3" />, label: "Search" },
-      ],
-      enabled: filters[model.key] || false,
-      onToggle: handleToggle(model.key),
-      hasSearchUrl: true,
-      showMore: true,
-      modelKey: model.key,
-    }))
-  )
+  // Helper function to get badges based on model capabilities
+  const getModelBadges = (model: any) => {
+    const badges: ModelBadge[] = []
+    
+    // Check for vision capability
+    if (model.architecture?.input_modalities?.includes('image')) {
+      badges.push({ icon: <Eye className="w-3 h-3" />, label: "Vision" })
+    }
+    
+    // Check for file support
+    if (model.architecture?.input_modalities?.includes('file')) {
+      badges.push({ icon: <FileText className="w-3 h-3" />, label: "Files" })
+    }
+    
+    // Check for reasoning capability
+    if (model.supported_parameters?.includes('reasoning')) {
+      badges.push({ icon: <Search className="w-3 h-3" />, label: "Reasoning" })
+    }
+    
+    return badges
+  }
+
+  // Map the OpenRouter models data to the component format
+  const models = openRouterModels?.data?.map((model: any) => ({
+    name: model.name,
+    description: model.description || 'No description available',
+    badges: getModelBadges(model),
+    enabled: filters[model.id] || false,
+    onToggle: handleToggle(model.id),
+    hasSearchUrl: true,
+    showMore: true,
+    modelKey: model.id,
+    providerIcon: getProviderIcon(model.id),
+  })) || []
 
   const handleSelectRecommended = async () => {
-    if (updating) return
+    if (updating || !openRouterModels?.data) return
     
     setUpdating(true)
     try {
       const recommendedFilters: Record<string, boolean> = {}
       const allModelIds: string[] = []
       
-      llmModels.forEach((provider, providerIndex) => {
-        provider.models.forEach((model, modelIndex) => {
-          recommendedFilters[model.key] = true
-          allModelIds.push(createModelId(provider.id, modelIndex))
-        })
+      openRouterModels.data.forEach((model: any) => {
+        recommendedFilters[model.id] = true
+        allModelIds.push(model.id)
       })
       
       setFilters(recommendedFilters)
@@ -278,15 +250,13 @@ const page = () => {
   }
 
   const handleUnselectAll = async () => {
-    if (updating) return
+    if (updating || !openRouterModels?.data) return
     
     setUpdating(true)
     try {
       const emptyFilters: Record<string, boolean> = {}
-      llmModels.forEach(provider => {
-        provider.models.forEach(model => {
-          emptyFilters[model.key] = false
-        })
+      openRouterModels.data.forEach((model: any) => {
+        emptyFilters[model.id] = false
       })
       
       setFilters(emptyFilters)
@@ -305,6 +275,27 @@ const page = () => {
     }
   }
 
+  if (isLoadingOpenRouterModels || loading) {
+    return (
+      <div className="p-6 max-w-4xl mx-auto space-y-6">
+        <div className="space-y-2">
+          <h1 className="text-2xl font-bold text-foreground">Available Models</h1>
+          <p className="text-muted-foreground">Loading models...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (errorOpenRouterModels) {
+    return (
+      <div className="p-6 max-w-4xl mx-auto space-y-6">
+        <div className="space-y-2">
+          <h1 className="text-2xl font-bold text-foreground">Available Models</h1>
+          <p className="text-red-500">Error loading models. Please try again.</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-6">
@@ -317,7 +308,7 @@ const page = () => {
       </div>
 
       {/* Action Buttons */}
-      <div className="flex items-center gap-3 flex-wrap justify-between">
+      <div className="flex items-center justify-between">
         <Button variant="outline" size="sm" className="text-sm">
           Filter by features
         </Button>
@@ -329,7 +320,7 @@ const page = () => {
             onClick={handleSelectRecommended}
             disabled={updating}
           >
-            {updating ? 'Updating...' : 'Select Recommended Models'}
+            {updating ? 'Updating...' : 'Select All Models'}
           </Button>
           <Button 
             variant="outline" 
@@ -345,7 +336,7 @@ const page = () => {
 
       {/* Models List */}
       <div className="space-y-4 h-96 overflow-y-auto">
-        {models.map((model, index) => (
+        {models.map((model: any, index: number) => (
           <ModelCard key={model.modelKey} {...model} />
         ))}
       </div>
