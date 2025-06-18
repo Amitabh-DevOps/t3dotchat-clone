@@ -202,7 +202,7 @@ export const processSpecificT3Tags = async (
 
     for (const element of elements) {
       try {
-        const replacement = await configs[tagName](element);
+        const replacement = await configs[tagName as keyof typeof configs](element);
         if (replacement) {
           element.replaceWith(replacement);
           processedTags.push({
