@@ -41,7 +41,7 @@ const ModelCard: React.FC<ModelCardProps> = ({
   providerIcon
 }) => {
   return (
-    <Card className="border border-border/50 bg-card hover:bg-card/80 transition-colors">
+    <Card className="border border-border/50 bg-card hover:bg-card/80 ">
       <CardContent className="p-6">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 space-y-3">
@@ -71,7 +71,7 @@ const ModelCard: React.FC<ModelCardProps> = ({
               
               {/* Search URL Link */}
               {hasSearchUrl && (
-                <button className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors ml-auto">
+                <button className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground ml-auto">
                   <ExternalLink className="w-3 h-3" />
                   Search URL
                 </button>
