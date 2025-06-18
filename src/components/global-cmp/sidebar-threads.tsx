@@ -38,6 +38,7 @@ import { Label } from "@/components/ui/label"
 import { Edit } from 'lucide-react'
 import { DialogOverlay } from '@radix-ui/react-dialog'
 import threadsStore from '@/stores/threads.store'
+import { FiSearch } from 'react-icons/fi'
 
 interface Thread {
   _id: string
@@ -281,6 +282,9 @@ const SidebarThreads = () => {
     return (
       <SidebarContent>
         <SidebarGroup>
+        <SidebarGroupLabel className="gap-1">
+              <FiSearch className="!w-3 !h-3" /> Search Results
+            </SidebarGroupLabel>
               <SidebarMenu>
                 {searchedThreads.map((thread) => (
                   <ThreadItem 
