@@ -10,6 +10,7 @@ A powerful, feature-rich clone of [t3.chat](https://t3.chat) with advanced AI ca
 - **🎨 Pixel-Perfect UI** - Consistent design with precise attention to detail
 - **🧠 Smart Prompt Engineering** - Optimized AI behavior for relevant responses
 - **🔗 OpenRouter Integration** - Effortless access to multiple LLM models
+- **🤖 100+ LLM Models Access** - Wide variety of AI models for different use cases
 
 ## 🚀 Getting Started
 
@@ -75,7 +76,7 @@ This project is licensed under the MIT License - see below for details:
 ```
 MIT License
 
-Copyright (c) 2024 T4 Chat
+Copyright (c) 2025 T4 Chat
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
