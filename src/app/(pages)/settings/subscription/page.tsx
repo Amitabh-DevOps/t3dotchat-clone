@@ -7,7 +7,7 @@ const page = () => {
     <div className="max-w-4xl mx-auto p-6 space-y-8">
       {/* Header Section */}
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Upgrade to Pro</h1>
+        <h1 className="text-2xl font-bold text-foreground">Upgrade to Pro</h1>
         <div className="text-right">
           <div className="text-3xl font-bold">$8<span className="text-base font-normal text-muted-foreground">/month</span></div>
         </div>

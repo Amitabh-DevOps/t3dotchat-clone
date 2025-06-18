@@ -51,7 +51,7 @@ const ContactPage = () => {
 
   return (
     <div className="max-w-2xl p-4 space-y-2">
-      <h1 className="text-3xl font-bold text-white mb-8">
+      <h1 className="text-2xl font-bold text-foreground mb-8">
         We're here to help!
       </h1>
       
@@ -67,10 +67,10 @@ const ContactPage = () => {
                 {option.icon}
               </div>
               <div className="flex-1 space-y-1">
-                <h3 className="text-lg font-semibold text-white">
+                <h3 className="text-lg font-semibold">
                   {option.title}
                 </h3>
-                <p className="text-gray-400 text-sm">
+                <p className=" text-sm">
                   {option.description}
                 </p>
               </div>

@@ -115,7 +115,7 @@ const MessageHistory = ({ data }: MessageHistoryProps) => {
     <div className="space-y-6">
       {/* Header */}
       <div className="space-y-2">
-        <h2 className="text-2xl font-semibold text-foreground">
+        <h2 className="text-2xl font-bold text-foreground">
           Message History
         </h2>
         <p className="text-sm text-muted-foreground">
@@ -152,7 +152,7 @@ const MessageHistory = ({ data }: MessageHistoryProps) => {
             className="flex items-center space-x-2"
           >
             <Download className="h-4 w-4" />
-            <span>Export</span>
+            <span className="md:block hidden">Export</span>
           </Button>
 
           <Button
@@ -163,7 +163,7 @@ const MessageHistory = ({ data }: MessageHistoryProps) => {
             className="flex items-center space-x-2 text-destructive hover:text-destructive"
           >
             <Trash2 className="h-4 w-4" />
-            <span>{bulkDeleteMutation.isPending ? "Deleting..." : "Delete"}</span>
+            <span className="md:block hidden">{bulkDeleteMutation.isPending ? "Deleting..." : "Delete"}</span>
           </Button>
 
           <Button
@@ -173,7 +173,7 @@ const MessageHistory = ({ data }: MessageHistoryProps) => {
             className="flex items-center space-x-2"
           >
             <Upload className="h-4 w-4" />
-            <span>Import</span>
+            <span className="md:block hidden">Import</span>
           </Button>
         </div>
       </div>
