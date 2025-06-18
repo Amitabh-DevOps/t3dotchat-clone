@@ -42,6 +42,7 @@ import threadsStore from '@/stores/threads.store'
 interface Thread {
   _id: string
   threadId: string
+  parentChatId: string
   title: string
   isPinned: boolean
   createdAt: string
@@ -286,7 +287,7 @@ const SidebarThreads = () => {
                   <ThreadItem 
                     key={thread.threadId} 
                     thread={thread as any} 
-                    showBranchIcon={thread.title.length > 20}
+                    showBranchIcon={thread.parentChatId !== null}
                   />
                 ))}
               </SidebarMenu>
@@ -309,7 +310,7 @@ const SidebarThreads = () => {
                 <ThreadItem 
                   key={thread._id} 
                   thread={thread} 
-                  showBranchIcon={thread.title.length > 20}
+                  showBranchIcon={thread.parentChatId !== null}
                 />
               ))}
             </SidebarMenu>
@@ -325,7 +326,7 @@ const SidebarThreads = () => {
                 <ThreadItem 
                   key={thread._id} 
                   thread={thread} 
-                  showBranchIcon={thread.title.length > 20}
+                  showBranchIcon={thread.parentChatId !== null}
                 />
               ))}
             </SidebarMenu>
@@ -341,7 +342,7 @@ const SidebarThreads = () => {
                 <ThreadItem 
                   key={thread._id} 
                   thread={thread} 
-                  showBranchIcon={thread.title.length > 20}
+                  showBranchIcon={thread.parentChatId !== null}
                 />
               ))}
             </SidebarMenu>
