@@ -50,7 +50,7 @@ function ChatInput({
 }: ChatInputProps) {
   const params = useParams();
   const router = useRouter();
-  const {userData} = userStore();
+  const { userData } = userStore();
   const { error, sendMessage, clearMessages } = useStreamResponse();
   const {
     setQuery,
@@ -136,8 +136,19 @@ function ChatInput({
 
   // Handle form submission
   const handleSubmit = async () => {
-    if(!userData?.openRouterApiKey || userData?.openRouterApiKey.trim() == "") {
-      console.log("Please connect your OpenRouter account to start chatting",userData);
+    if (!userData) {
+      toast.info("Please login to start chatting");
+      router.push("/auth");
+      return;
+    }
+    if (
+      !userData?.openRouterApiKey ||
+      userData?.openRouterApiKey.trim() == ""
+    ) {
+      console.log(
+        "Please connect your OpenRouter account to start chatting",
+        userData
+      );
       toast.info("Please connect your OpenRouter account to start chatting");
       router.push("/connect");
       return;
@@ -145,13 +156,15 @@ function ChatInput({
     const generatedId = generateUUID();
     setIsRegenerate(false);
     if (!params.chatid) {
-      createThread({ title: query, threadId: generatedId }).then((res) => {
-        if (res.data) {
-          queryClient.invalidateQueries({ queryKey: ["threads"] });
-        }
-      }).catch((error) => {
-        console.error("Thread creation failed:", error);
-      });
+      createThread({ title: query, threadId: generatedId })
+        .then((res) => {
+          if (res.data) {
+            queryClient.invalidateQueries({ queryKey: ["threads"] });
+          }
+        })
+        .catch((error) => {
+          console.error("Thread creation failed:", error);
+        });
       setMessages([]);
       router.push(`/chat/${generatedId}`);
     }
