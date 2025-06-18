@@ -7,10 +7,12 @@ const findOrCreateOAuthUser = async ({
   email,
   image,
   name,
+  openRouterApiKey,
 }: {
   email: string;
   image: string;
   name?: string;
+  openRouterApiKey?: string;
 }) => {
   await connectDB();
   const existingUser = await User.findOne({ email });
@@ -21,15 +23,16 @@ const findOrCreateOAuthUser = async ({
     name: name || email.split("@")[0],
     email,
     image,
+    openRouterApiKey,
   });
   return newUser;
 };
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
+export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET, 
     }),
   ],
   callbacks: {
@@ -43,19 +46,24 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           image: user.image,
           name: user?.name,
         });
-
+        
         user.id = userData._id.toString();
+        user.openRouterApiKey = userData.openRouterApiKey || "";
         return true;
       } catch (error) {
         console.error("OAuth sign in error:", error);
         throw new Error("Failed to sign in with OAuth. Please try again.");
       }
     },
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
+    async jwt({ token, user, trigger, session }) {
+      if (trigger === "update" && session?.user) {
+        console.log("update triggered", session?.user.openRouterApiKey);
+        token.openRouterApiKey = session?.user.openRouterApiKey;
       }
-
+      if (user && trigger !== "update") {
+        token.id = user.id;
+        token.openRouterApiKey = user.openRouterApiKey;
+      }
       return token;
     },
     async session({ session, token }) {
@@ -64,6 +72,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         user: {
           ...session.user,
           id: token.id as string,
+          openRouterApiKey: token.openRouterApiKey as string || "",
         },
       };
     },

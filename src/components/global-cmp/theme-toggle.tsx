@@ -1,6 +1,6 @@
 "use client";
 import { useTheme } from "next-themes";
-import React from "react";
+import React, { useEffect } from "react";
 import { FiMoon, FiSun } from "react-icons/fi";
 import { Button } from "../ui/button";
 
@@ -13,6 +13,8 @@ const ThemeToggle = () => {
       setTheme("light");
     }
   };
+
+
 
   return (
     <>

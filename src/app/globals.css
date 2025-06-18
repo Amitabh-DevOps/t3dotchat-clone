@@ -501,7 +501,7 @@ body {
   }
 }
 
-#chat-input {
+#chat-input, .edit-input{
   field-sizing: content;
 }
 
@@ -515,32 +515,37 @@ body {
     font-feature-settings: normal;
     font-variation-settings: normal;
     color: var(--color-foreground);
-    background-color: hsl(var(--secondary) / 0.5);
+    background-color: hsl(var(--secondary) / 0.5) ;
     border-radius: calc(var(--radius) - 2px);
     padding: 0.25em 0.5em;
   }
 }
 
-@layer base {
-}
 
 .mark-response pre {
-  background-color: var(--color-background);
+  background-color: var(--color-background) !important;
   padding: 1rem;
   font-size: 0.9em;
   code,
   kbd,
   pre,
   samp {
-    font-family: var(--font-berkeley-mono);
+    font-family: var(--font-berkeley-mono) !important;
     font-feature-settings: normal;
     font-variation-settings: normal;
     color: var(--color-foreground);
   }
-  code {
-    background-color: transparent !important;
-    padding: 0 !important;
-  }
+
+}
+
+code{
+  background-color:var(--color-background) !important;
+}
+
+.mark-response pre, pre code {
+  background-color: transparent !important;
+  font-family: var(--font-berkeley-mono) !important;
+  padding: 0 !important;
 }
 
 span {
@@ -554,8 +559,45 @@ span {
   animation: l5 1s infinite linear alternate;
 }
 @keyframes l5 {
-    0%  {box-shadow: 20px 0 var(--color-accent), -20px 0 var(--color-secondary);background: var(--color-accent) }
-    33% {box-shadow: 20px 0 var(--color-accent), -20px 0 var(--color-secondary);background: var(--color-secondary)}
-    66% {box-shadow: 20px 0 var(--color-secondary),-20px 0 var(--color-accent); background: var(--color-secondary)}
-    100%{box-shadow: 20px 0 var(--color-secondary),-20px 0 var(--color-accent); background: var(--color-accent) }
+    0%  {box-shadow: 20px 0 var(--color-accent), -20px 0 var(--color-secondary/50);background: var(--color-accent) }
+    33% {box-shadow: 20px 0 var(--color-accent), -20px 0 var(--color-secondary/50);background: var(--color-secondary/50)}
+    66% {box-shadow: 20px 0 var(--color-secondary/50),-20px 0 var(--color-accent); background: var(--color-secondary/50)}
+    100%{box-shadow: 20px 0 var(--color-secondary)/50,-20px 0 var(--color-accent); background: var(--color-accent) }
 }
+
+/* Hide t3-tool-loader when t3-tool-output exists in the same container */
+.mark-response:has(.t3-tool-output) .t3-tool-loader {
+  display: none !important;
+}
+
+/* Alternative: Hide t3-tool-loader when it's followed by any sibling t3-tool-output */
+.t3-tool-loader:has(~ .t3-tool-output) {
+  display: none !important;
+}
+.t3-tool-loader:has(~ p:not(:empty)) {
+  display: none !important;
+}
+@layer base {
+  
+.animate-bounce-dot {
+  animation: bounce-dot 1.4s infinite ease-in-out both;
+}
+
+.animate-delay-1 {
+  animation-delay: -0.32s;
+}
+
+.animate-delay-2 {
+  animation-delay: -0.16s;
+}
+@keyframes bounce-dot {
+  0%, 80%, 100% {
+      transform: scale(0);
+  }
+  40% {
+      transform: scale(1);
+  }
+}
+}
+
+

@@ -1,10 +1,18 @@
 "use client";
 
-import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+} from "@/components/ui/search-dialog";
 import { Input } from "@/components/ui/input";
 import { Search, Slash, Plus, Clock, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { DialogTrigger } from "@radix-ui/react-dialog";
+import {
+  DialogOverlay,
+  DialogPortal,
+  DialogTrigger,
+} from "@radix-ui/react-dialog";
 import { RxSlash } from "react-icons/rx";
 import { Button } from "../ui/button";
 import { FiPlus, FiSearch } from "react-icons/fi";
@@ -13,7 +21,9 @@ import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { searchThread } from "@/action/thread.action";
 import { useDebounce } from "@/hooks/use-debounce";
-
+import DevInput from "../global-cmp/dev-input";
+import threadsStore from "@/stores/threads.store";
+import { IoMdClose } from "react-icons/io";
 
 interface Thread {
   threadId: string;
@@ -21,13 +31,18 @@ interface Thread {
   isPinned: boolean;
 }
 
-export default function SearchThreads() {
+export default function SearchThreads({
+  isSidebar = false,
+}: {
+  isSidebar?: boolean;
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const router = useRouter();
+  const { setSearchedThreads, searchedThreads } = threadsStore();
 
   // Query for searching threads
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const {
     data: searchResults,
     isLoading,
@@ -39,9 +54,12 @@ export default function SearchThreads() {
       if (result.error) {
         throw new Error(result.error as string);
       }
+      if (isSidebar) {
+        setSearchedThreads(result.data);
+      }
       return result.data as Thread[];
     },
-    enabled: isOpen, // Only fetch when dialog is open
+    enabled: isSidebar ? !!debouncedSearchQuery.trim() : isOpen, // Enable based on context
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
@@ -70,11 +88,47 @@ export default function SearchThreads() {
     }
   }, [isOpen]);
 
+  // Clear searched threads when search query is empty (for sidebar)
+  useEffect(() => {
+    if (isSidebar && !searchQuery.trim()) {
+      setSearchedThreads([]);
+    }
+  }, [searchQuery, isSidebar, setSearchedThreads]);
+
   const filteredResults = searchResults || [];
   const hasResults = filteredResults.length > 0;
   const showRecent = !searchQuery.trim() && !isLoading;
   const showSearchResults = searchQuery.trim() && !isLoading;
   const showNoResults = searchQuery.trim() && !isLoading && !hasResults;
+
+  if (isSidebar) {
+    return (
+      <DevInput
+        className="!w-full gap-3"
+        icon2={
+          searchQuery.length > 0 ? (
+            <IoMdClose onClick={() => setSearchQuery("")} />
+          ) : (
+            <></>
+          )
+        }
+        placeholder="Search your threads..."
+        variant="underline"
+        role="searchbox"
+        aria-label="Search your threads..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        onKeyDown={handleKeyDown}
+        icon={
+          isLoading ? (
+            <Loader2 className="w-3.5 h-3.5 text-muted-foreground ml-1 animate-spin" />
+          ) : (
+            <FiSearch className="w-3.5 h-3.5 text-muted-foreground ml-1" />
+          )
+        }
+      />
+    );
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -85,7 +139,7 @@ export default function SearchThreads() {
       </DialogTrigger>
       <DialogContent
         className={cn(
-          "pointer-events-auto w-full max-w-md rounded-xl bg-popover p-3.5 pt-2.5 text-secondary-foreground shadow-2xl outline gap-1 outline-border/20 backdrop-blur-md sm:max-w-xl"
+          "pointer-events-auto w-full max-w-md rounded-xl bg-popover p-2.5  pt-2 text-secondary-foreground shadow-2xl outline gap-1 outline-border/20 backdrop-blur-md sm:max-w-xl"
         )}
       >
         <DialogHeader className="relative border-b border-chat-border">
@@ -204,7 +258,6 @@ export default function SearchThreads() {
               </ul>
             </div>
           )}
-       
         </div>
       </DialogContent>
     </Dialog>

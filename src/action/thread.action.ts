@@ -59,52 +59,6 @@ export const getThread = async () => {
     };
   }
 };
-
-export const createThread = async ({
-  title,
-  threadId,
-}: {
-  title?: string;
-  threadId: string;
-}) => {
-  const session = await auth();
-
-  if (!session?.user) {
-    return {
-      data: null,
-      error: "Unauthorized",
-    };
-  }
-
-  try {
-    await connectDB();
-
-    const countMessages = await getMessageUsage();
-
-    if (countMessages.data && countMessages.data >= 20) {
-      return {
-        data: null,
-        error: "You have reached the maximum number of messages for today",
-      };
-    }
-    const thread = await Thread.create({
-      threadId: threadId,
-      userId: session.user.id,
-      title: title || "New Thread",
-    });
-
-    return {
-      data: serializeData(thread),
-      error: null,
-    };
-  } catch (error: any) {
-    return {
-      data: null,
-      error: error.message,
-    };
-  }
-};
-
 export const pinThread = async ({ threadId }: { threadId: string }) => {
   const session = await auth();
 
@@ -144,6 +98,90 @@ export const pinThread = async ({ threadId }: { threadId: string }) => {
     };
   }
 };
+export const deleteThread = async ({ threadId }: { threadId: string }) => {
+  const session = await auth();
+
+  if (!session?.user) {
+    return {
+      data: null,
+      error: "Unauthorized",
+    };
+  }
+  try {
+    await connectDB();
+
+    const thread = await Thread.findOne({
+      threadId: threadId,
+      userId: session.user.id,
+    });
+
+    if (!thread) {
+      return {
+        data: null,
+        error: "Thread not found",
+      };
+    }
+
+    await Thread.deleteOne({ threadId: threadId });
+
+    await Message.deleteMany({ threadId: threadId });
+
+    return {
+      data: serializeData(thread),
+      error: null,
+    };
+  } catch (error: any) {
+    return {
+      data: null,
+      error: error,
+    };
+  }
+};
+export const createThread = async ({
+  title,
+  threadId,
+}: {
+  title?: string;
+  threadId: string;
+}) => {
+  const session = await auth();
+console.log(threadId, title);
+  if (!session?.user) {
+    return {
+      data: null,
+      error: "Unauthorized",
+    };
+  }
+
+  try {
+    await connectDB();
+
+    const countMessages = await getMessageUsage();
+
+    // if (countMessages.data && countMessages.data >= 20) {
+    //   return {
+    //     data: null,
+    //     error: "You have reached the maximum number of messages for today",
+    //   };
+    // }
+    const thread = await Thread.create({
+      threadId: threadId,
+      userId: session.user.id,
+      title: title || "New Thread",
+    });
+
+    return {
+      data: serializeData(thread),
+      error: null,
+    };
+  } catch (error: any) {
+    return {
+      data: null,
+      error: error.message,
+    };
+  }
+};
+
 
 export const renameThread = async ({
   threadId,
@@ -191,45 +229,7 @@ export const renameThread = async ({
   }
 };
 
-export const deleteThread = async ({ threadId }: { threadId: string }) => {
-  const session = await auth();
 
-  if (!session?.user) {
-    return {
-      data: null,
-      error: "Unauthorized",
-    };
-  }
-  try {
-    await connectDB();
-
-    const thread = await Thread.findOne({
-      threadId: threadId,
-      userId: session.user.id,
-    });
-
-    if (!thread) {
-      return {
-        data: null,
-        error: "Thread not found",
-      };
-    }
-
-    await Thread.deleteOne({ threadId: threadId });
-
-    await Message.deleteMany({ threadId: threadId });
-
-    return {
-      data: serializeData(thread),
-      error: null,
-    };
-  } catch (error: any) {
-    return {
-      data: null,
-      error: error,
-    };
-  }
-};
 
 export const searchThread = async ({ query }: { query?: string }) => {
   const session = await auth();

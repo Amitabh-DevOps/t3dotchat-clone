@@ -6,27 +6,22 @@ import { RefreshCcw, SquarePen, Copy, Check, GitBranch } from "lucide-react";
 import chatStore from "@/stores/chat.store";
 import { getMessages } from "@/action/message.action";
 import { useIsMutating, useQuery } from "@tanstack/react-query";
-import { MessagePair, StreamingMessagePair } from "./message-container";
+import dynamic from "next/dynamic";
+const MessagePair = dynamic(
+  () => import("./message-container").then((mod) => mod.MessagePair),
+  { ssr: false }
+);
 
 const ChatContainer = () => {
   const params = useParams();
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const {
-    response,
-    messages,
-    setMessages,
-    query,
-    setResponse,
-    setQuery,
-    isLoading,
-  } = chatStore();
+  const { messages, setMessages, query, setQuery, isLoading, isRegenerate } = chatStore();
 
   const { data } = useQuery({
     queryKey: ["thread-messages", params.chatid],
     queryFn: async () => {
-      setMessages([]);
       const posts = await getMessages({ threadId: params.chatid as string });
-      setMessages(posts.data);
+      posts.data && setMessages(posts.data);
       return posts.data;
     },
     staleTime: 0,
@@ -36,28 +31,18 @@ const ChatContainer = () => {
 
   // Auto-scroll to bottom when messages or response updates
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ 
+    messagesEndRef.current?.scrollIntoView({
       behavior: "smooth",
-      block: "end"
+      block: "end",
     });
   };
 
-
   // Scroll when response updates (streaming)
   useEffect(() => {
-    if (response || isLoading) {
+    if(!isRegenerate){
       scrollToBottom();
     }
-  }, [response, isLoading]);
-
-  useEffect(() => {
-    setMessages([]);
-    setResponse("");
-    return () => {
-      setMessages([]);
-      setResponse("");
-    };
-  }, [params.chatid, setMessages, setResponse]);
+  }, [isLoading, messages]);
 
   const isMutating = useIsMutating({ mutationKey: ["chat-stream"] });
 
@@ -82,8 +67,9 @@ const ChatContainer = () => {
     <div
       role="log"
       aria-label="Chat messages"
+      ref={messagesEndRef}
       aria-live="polite"
-      className="mx-auto flex w-full max-w-3xl flex-col space-y-12 px-4 pb-20 pt-10"
+      className="mx-auto flex w-full max-w-3xl flex-col space-y-12 px-4 pb-[calc(100vh-25rem)] pt-10"
     >
       {/* Render stored messages */}
       {messages &&
@@ -101,24 +87,6 @@ const ChatContainer = () => {
             onBranchAI={() => handleBranch(`${message.id}-response`)}
           />
         ))}
-
-      {/* Current streaming response */}
-      {(response || isLoading) && (
-        <StreamingMessagePair
-          userQuery={query}
-          aiResponse={response}
-          isLoading={isLoading}
-          onRetryUser={() => handleRetry("current-query")}
-          onEditUser={() => handleEdit("current-query")}
-          onCopyUser={() => handleCopy(query)}
-          onRetryAI={() => handleRetry("current-response")}
-          onCopyAI={() => handleCopy(response)}
-          onBranchAI={() => handleBranch("current-response")}
-        />
-      )}
-      
-      {/* Invisible element to scroll to */}
-      <div ref={messagesEndRef} className="h-20" />
     </div>
   );
 };

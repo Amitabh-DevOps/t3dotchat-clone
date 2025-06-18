@@ -5,6 +5,7 @@ type InputProps = {
   variant?: "base" | "bordered" | "faded" | "underline";
   size?: "sm" | "md" | "lg";
   labelName?: string;
+  icon2?: React.ReactNode;
   rounded?: "none" | "sm" | "md" | "lg" | "full";
   reverseIcon?: boolean;
   icon?: React.ReactNode;
@@ -23,6 +24,7 @@ const DevInput = forwardRef<HTMLInputElement, InputProps>(
       labelName,
       className,
       icon,
+      icon2,
       rounded = "full",
       reverseIcon = false,
       ...props
@@ -85,6 +87,7 @@ const DevInput = forwardRef<HTMLInputElement, InputProps>(
             {...props}
             className="autofill:duration-[5000s] autofill:delay-0 autofill:ease-in-out bg-transparent rounded text-sm outline-0 w-full placeholder:text-muted-foreground/50"
           />
+          <span className="text-xl text-primary">{icon2}</span>
         </div>
       </div>
     );

@@ -26,7 +26,7 @@ async function page({ params }: { params: Promise<{ chatid: string }> }) {
   // }
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <Suspense fallback={<></>}>
+      <Suspense fallback={<>Loading...</>}>
         <ChatContainer />
       </Suspense>
     </HydrationBoundary>
