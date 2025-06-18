@@ -10,7 +10,7 @@ import { AlertTriangle, Info } from "lucide-react";
 import Link from "next/link";
 import { getCredit } from "@/action/open-router.action";
 import { redirect } from "next/navigation";
-import { updateOpenRouterApiKey } from "@/action/user.action";
+import DisconnectButton from "./disconnect-button";
 
 const Profile = async () => {
   const [userData, creditData] = await Promise.all([
@@ -20,6 +20,7 @@ const Profile = async () => {
 
   const user = userData.data;
   console.log("creditData", creditData);
+  
   return (
     <div className="w-80">
       {/* Profile Section */}
@@ -76,9 +77,7 @@ const Profile = async () => {
             <div className="flex items-center gap-2">
               <span className="text-sm font-mono">sk-or-v1-d5a...</span>
             </div>
-            <Button variant="outline" size="sm" className="text-muted-foreground hover:text-foreground">
-              Disconnect
-            </Button>
+            <DisconnectButton />
           </div>
         </div>
       </Card>
@@ -146,5 +145,7 @@ const Profile = async () => {
     </div>
   );
 };
+
+
 
 export default Profile;
