@@ -161,7 +161,7 @@ export async function POST(request: NextRequest) {
     }
     const openrouter = createOpenRouter({
       apiKey: session?.user?.openRouterApiKey,
-    });
+    });  
     const result = streamText({
       model: google("models/gemini-2.0-flash-exp"),
       messages: [{ role: "system", content: systemPrompt }, ...messages],
@@ -246,6 +246,8 @@ export async function POST(request: NextRequest) {
         }),
       },
     });
+
+    console.log("the result is", result)
 
     // Use a more reliable streaming approach
     const encoder = new TextEncoder();

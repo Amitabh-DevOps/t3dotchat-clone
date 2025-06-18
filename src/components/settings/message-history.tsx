@@ -147,8 +147,8 @@ const MessageHistory = ({ data }: MessageHistoryProps) => {
           <Button
             variant="outline"
             size="sm"
+            disabled
             onClick={handleExport}
-            disabled={selectedMessages.length === 0}
             className="flex items-center space-x-2"
           >
             <Download className="h-4 w-4" />
@@ -169,6 +169,7 @@ const MessageHistory = ({ data }: MessageHistoryProps) => {
           <Button
             variant="outline"
             size="sm"
+            disabled
             onClick={handleImport}
             className="flex items-center space-x-2"
           >
