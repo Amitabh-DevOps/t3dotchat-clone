@@ -190,7 +190,6 @@ export function useStreamResponse(): UseStreamResponseReturn {
         errorState.setMessages(messagesWithoutOptimistic);
         setError(err instanceof Error ? err.message : "An error occurred");
       } finally {
-        setQuery("");
         setIsLoading(false);
       }
     },

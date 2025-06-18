@@ -203,7 +203,7 @@ const SidebarThreads = () => {
         <ContextMenuTrigger asChild>
           <SidebarMenuItem className="hover:bg-sidebar-accent overflow-hidden flex items-center relative px-0 group/link-item rounded-lg">
             <Link 
-              className={`p-2 px-3 ${showBranchIcon ? 'truncate flex items-center gap-2' : 'block'}`}
+              className={`p-2 text-nowrap overflow-hidden w-[95%] truncate px-3 ${showBranchIcon ? 'truncate flex items-center gap-2' : 'block'}`}
               href={`/chat/${thread.threadId}`}
             >
               {showBranchIcon && <BranchOffIcon />}
@@ -211,7 +211,7 @@ const SidebarThreads = () => {
                 {thread.title}
               </p>
             </Link>
-            <div className="flex *:size-7 bg-sidebar-accent backdrop-blur-sm transition-[opacity,transform] items-center gap-1 absolute group-hover/link-item:right-1 -right-[100px]">
+            <div className="flex bg-sidebar-accent rounded-lg duration-300 ease-out *:size-7  backdrop-blur-sm transition-all items-center gap-1 absolute group-hover/link-item:right-1 -right-[100px]">
               <Button 
                 variant="ghost" 
                 size="icon"

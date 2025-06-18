@@ -7,6 +7,7 @@ import {
   LuNewspaper,
   LuSparkles,
 } from "react-icons/lu";
+import PresetMsg from "./preset-msg";
 
 const HomeChat = () => {
   const userName = "User";
@@ -57,17 +58,17 @@ const HomeChat = () => {
               {actionButtons.map((tab, index) => (
                 <TabsTrigger
                   className="
-                justify-center  whitespace-nowrap text-sm transition-[opacity, translate-x]
-                focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring
-                disabled:cursor-not-allowed disabled:opacity-50
-                [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0
-                h-9 flex items-center gap-2 rounded-full px-5 py-2 font-semibold
-                outline-1 outline-secondary/70 backdrop-blur-xl shadow
-                !border-0 border-reflect button-reflect
-                bg-background 
-                hover:bg-accent hover:text-accent-foreground
-                dark:bg-secondary/30 dark:hover:bg-secondary
-               data-[state=active]:bg-[rgb(162,59,103)] 
+               justify-center  whitespace-nowrap text-sm transition-[opacity, translate-x]
+               focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring
+               disabled:cursor-not-allowed disabled:opacity-50
+               [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0
+               h-9 flex items-center gap-2 rounded-full px-5 py-2 font-semibold
+               outline-1 outline-secondary/70 backdrop-blur-xl shadow
+               !border-0 border-reflect button-reflect
+               bg-background 
+               hover:bg-accent hover:text-accent-foreground
+               dark:bg-secondary/30 dark:hover:bg-secondary
+              data-[state=active]:bg-[rgb(162,59,103)] 
                data-[state=inactive]:before:!p-0 
                data-[state=inactive]:text-secondary-foreground 
                data-[state=inactive]:before:!bg-none 
@@ -94,16 +95,7 @@ const HomeChat = () => {
             {actionButtons.map((tab) => (
               <TabsContent className="mt-5" key={tab.value} value={tab.value}>
                 <div className="flex flex-col text-foreground">
-                  {presetMessages[tab.value].map((message, index) => (
-                    <div
-                      key={index}
-                      className="flex items-start gap-2 border-t border-secondary/40 py-1 first:border-none"
-                    >
-                      <button className="w-full rounded-md py-2 text-left text-secondary-foreground hover:bg-secondary/50 sm:px-3">
-                        <span>{message.text}</span>
-                      </button>
-                    </div>
-                  ))}
+                 <PresetMsg presetMessages={presetMessages} tab={tab} />
                 </div>
               </TabsContent>
             ))}

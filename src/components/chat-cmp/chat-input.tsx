@@ -33,6 +33,7 @@ import { FiLoader } from "react-icons/fi";
 import OpenRouterConnect from "../open-router/open-router-connect";
 import userStore from "@/stores/user.store";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface ChatInputProps {
   placeholder?: string;
@@ -70,6 +71,8 @@ function ChatInput({
     type: string;
     url: string;
   } | null>(null);
+
+  const queryClient = useQueryClient();
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -134,6 +137,7 @@ function ChatInput({
   // Handle form submission
   const handleSubmit = async () => {
     if(!userData?.openRouterApiKey || userData?.openRouterApiKey.trim() == "") {
+      console.log("Please connect your OpenRouter account to start chatting",userData);
       toast.info("Please connect your OpenRouter account to start chatting");
       router.push("/connect");
       return;
@@ -141,7 +145,13 @@ function ChatInput({
     const generatedId = generateUUID();
     setIsRegenerate(false);
     if (!params.chatid) {
-      await createThread({ title: "New Thread", threadId: generatedId });
+      createThread({ title: query, threadId: generatedId }).then((res) => {
+        if (res.data) {
+          queryClient.invalidateQueries({ queryKey: ["threads"] });
+        }
+      }).catch((error) => {
+        console.error("Thread creation failed:", error);
+      });
       setMessages([]);
       router.push(`/chat/${generatedId}`);
     }

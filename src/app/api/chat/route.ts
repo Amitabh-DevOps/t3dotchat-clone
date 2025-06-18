@@ -160,6 +160,7 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+    console.log(decrypt(session?.user?.openRouterApiKey as string));
     const openrouter = createOpenRouter({
       apiKey: decrypt(session?.user?.openRouterApiKey as string),
     });  

@@ -6,6 +6,7 @@ import { auth } from "@/auth";
 import Message from "@/models/message.model";
 import { getMessageUsage } from "./message.action";
 import { v4 as uuidv4 } from "uuid";
+import { generateAiResponse } from "./chat.action";
 
 const generateUUID = () => {
   const newId = uuidv4();
@@ -27,10 +28,12 @@ export const getThread = async () => {
 
     const threads = await Thread.find({
       userId: session.user.id,
-    }).populate({
-      path: 'parentChatId',
-      model: 'Message'
-    }).sort({ createdAt: -1 });
+    })
+      .populate({
+        path: "parentChatId",
+        model: "Message",
+      })
+      .sort({ createdAt: -1 });
 
     // Get today's date range (start and end of today)
     const today = new Date();
@@ -185,10 +188,28 @@ export const createThread = async ({
     //     error: "You have reached the maximum number of messages for today",
     //   };
     // }
+
+    const aiResponse = await generateAiResponse({
+      message: `Create a 2-5 word title for this message: ${title}
+
+      Rules:
+      - Maximum 5 words
+      - No quotes, no colons, no extra formatting
+      - Just plain text
+      - Be specific about the topic
+      
+      Examples:
+      Learning React Hooks
+      Today Weather Update
+      JavaScript Debugging Help
+      Chocolate Cake Recipe
+      
+      Response format: Just the title words, nothing else.`,
+    });
     const thread = await Thread.create({
       threadId: threadId,
       userId: session.user.id,
-      title: title || "New Thread",
+      title: aiResponse.data || "New Thread",
     });
 
     return {
