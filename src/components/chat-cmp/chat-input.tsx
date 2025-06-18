@@ -30,6 +30,9 @@ import { useStreamResponse } from "@/hooks/use-response-stream";
 import { useCloudinaryUpload } from "@/hooks/use-upload"; // Import the hook
 import SearchModels from "./search-models";
 import { FiLoader } from "react-icons/fi";
+import OpenRouterConnect from "../open-router/open-router-connect";
+import userStore from "@/stores/user.store";
+import { toast } from "sonner";
 
 interface ChatInputProps {
   placeholder?: string;
@@ -46,6 +49,7 @@ function ChatInput({
 }: ChatInputProps) {
   const params = useParams();
   const router = useRouter();
+  const {userData} = userStore();
   const { error, sendMessage, clearMessages } = useStreamResponse();
   const {
     setQuery,
@@ -129,6 +133,11 @@ function ChatInput({
 
   // Handle form submission
   const handleSubmit = async () => {
+    if(!userData?.openRouterApiKey || userData?.openRouterApiKey.trim() == "") {
+      toast.info("Please connect your OpenRouter account to start chatting");
+      router.push("/connect");
+      return;
+    }
     const generatedId = generateUUID();
     setIsRegenerate(false);
     if (!params.chatid) {
@@ -152,7 +161,7 @@ function ChatInput({
 
   return (
     <div className="absolute !bottom-0 h-fit inset-x-0 w-full">
-      <div className="rounded-t-[20px] bg-chat-input-background/80 dark:bg-secondary/30 p-2 pb-0 backdrop-blur-lg ![--c:--chat-input-gradient] border-x border-secondary-foreground/5 gradBorder">
+      <div className="rounded-t-[20px] bg-chat-input-background/80 relative dark:bg-secondary/30 p-2 pb-0 backdrop-blur-lg ![--c:--chat-input-gradient] border-x border-secondary-foreground/5 gradBorder">
         <form
           onSubmit={handleFormSubmit}
           className="relative flex w-full pb-2 flex-col items-stretch gap-2 rounded-t-xl border border-b-0 border-white/70 dark:border-secondary-foreground/5 bg-chat-input-background px-3 pt-3 text-secondary-foreground outline-8 outline-chat-input-gradient/50 dark:outline-chat-input-gradient/5 pb-safe-offset-3 max-sm:pb-6 sm:max-w-3xl dark:bg-secondary/30"
