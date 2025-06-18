@@ -48,9 +48,9 @@ const AttachmentsList = ({ data }: AttachmentsListProps) => {
     try {
       const pathname = new URL(url).pathname
       const extension = pathname.split('.').pop()?.toLowerCase()
-      return extension || 'file'
+      return extension || 'img'
     } catch {
-      return 'file'
+      return 'img'
     }
   }
 
@@ -78,13 +78,13 @@ const AttachmentsList = ({ data }: AttachmentsListProps) => {
       {/* Attachments Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {data.map((message) => (
-          <Card key={message._id as string} className="border border-border/50 bg-card hover:bg-card/80 transition-colors">
+          <Card key={message._id as string} className="border overflow-hidden border-border/50 bg-card hover:bg-card/80">
             <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-base">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                  <Paperclip className="w-4 h-4 text-white" />
+              <CardTitle className="flex items-center gap-2 text-base overflow-hidden">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Paperclip className="w-4 h-4" />
                 </div>
-                <span className="truncate">{getFileName(message.attachment)}</span>
+                <span className="truncate flex-1 min-w-0">{getFileName(message.attachment)}</span>
               </CardTitle>
             </CardHeader>
             
@@ -122,18 +122,18 @@ const AttachmentsList = ({ data }: AttachmentsListProps) => {
                   variant="outline"
                   size="sm"
                   className="flex-1"
-                  onClick={() => window.open(message.attachment, '_blank')}
+                  onClick={() => window.open(`/chat/${message.threadId}`, '_blank')}
                 >
                   <ExternalLink className="w-4 h-4 mr-2" />
                   Open
                 </Button>
-                <Button
+                {/* <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => navigator.clipboard.writeText(message.attachment)}
+                  onClick={() => navigator.clipboard.writeText(message.)}
                 >
                   Copy URL
-                </Button>
+                </Button> */}
               </div>
             </CardContent>
           </Card>
