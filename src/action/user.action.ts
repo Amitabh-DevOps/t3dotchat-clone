@@ -3,6 +3,7 @@ import connectDB from "@/config/db";
 import { serializeData } from "@/lib/constant";
 import User from "@/models/user.model";
 import { auth } from "@/auth";
+import { unstable_update as update } from "@/auth";
 
 export const getUser = async () => {
   const session = await auth();
@@ -127,10 +128,16 @@ export const updateOpenRouterApiKey = async (key: string) => {
 
     user.openRouterApiKey = key;
 
-    await user.save();
+    const updatedUser = await user.save();
+    await update({
+      user: {
+        ...session.user,
+        openRouterApiKey: updatedUser.openRouterApiKey,
+      },
+    });
 
     return {
-      data: serializeData(user),
+      data: serializeData(updatedUser),
       error: null,
     };
   } catch (error: any) {

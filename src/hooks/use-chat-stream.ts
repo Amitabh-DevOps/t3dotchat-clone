@@ -1,115 +1,94 @@
-import { createMessage } from "@/action/message.action";
-import chatStore from "@/stores/chat.store";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { create } from "zustand";
+import { useState, useCallback } from "react";
 
-interface StreamState {
-  currentResponse: string;
-  isStreaming: boolean;
+interface AiMessage {
+  role: "user" | "assistant";
+  content: Array<{
+    type: "text" | "image";
+    mimeType?: string;
+    text: string;
+    image?: URL;
+  }>;
+}
+
+interface UseStreamResponseReturn {
+  isLoading: boolean;
   error: string | null;
-  setCurrentResponse: (response: string) => void;
-  setIsStreaming: (streaming: boolean) => void;
-  setError: (error: string | null) => void;
+  response: string;
+  sendMessage: (promptMessage: AiMessage) => Promise<string>;
+  clearResponse: () => void;
 }
 
-interface StreamResponse {
-  fullResponse: string;
-}
+export function useChatStream(): UseStreamResponseReturn {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [response, setResponse] = useState("");
 
-async function streamChatMessage(
-  inputValue: string,
-  onChunk?: (chunk: string, fullResponse: string) => void
-): Promise<StreamResponse> {
-  const response = await fetch("/api/chat", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      messages: [{ role: "user", content: inputValue.trim() }],
-    }),
-  });
+  const sendMessage = useCallback(
+    async (promptMessage: AiMessage): Promise<string> => {
+      if (isLoading) return "";
 
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
-
-  const reader = response.body?.getReader();
-  if (!reader) {
-    throw new Error("Response body is not readable");
-  }
-
-  const decoder = new TextDecoder();
-  let fullResponse = "";
-
-  try {
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      const chunk = decoder.decode(value, { stream: true });
-      fullResponse += chunk;
-      onChunk?.(chunk, fullResponse);
-    }
-  } finally {
-    reader.releaseLock();
-  }
-
-  return { fullResponse };
-}
-
-const useStreamStore = create<StreamState>((set) => ({
-  currentResponse: "",
-  isStreaming: false,
-  error: null,
-  setCurrentResponse: (response) => set({ currentResponse: response }),
-  setIsStreaming: (isStreaming) => set({ isStreaming }),
-  setError: (error) => set({ error }),
-}));
-
-export function useChatStream() {
-  const {
-    currentResponse,
-    isStreaming,
-    error,
-    setCurrentResponse,
-    setIsStreaming,
-    setError,
-  } = useStreamStore();
-  const queryClient = useQueryClient();
-  const mutation = useMutation<
-    StreamResponse,
-    Error,
-    { query: string; chatid: string }
-  >({
-    mutationKey: ["chat-stream"],
-    mutationFn: ({ query }) =>
-      streamChatMessage(query, (chunk, fullResponse) => {
-        setCurrentResponse(fullResponse);
-      }),
-    onMutate: () => {
-      setIsStreaming(true);
+      setIsLoading(true);
+      setResponse("");
       setError(null);
+
+      try {
+        const apiResponse = await fetch("/api/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            messages: [promptMessage],
+          }),
+        });
+
+        if (!apiResponse.ok) {
+          throw new Error(`HTTP error! status: ${apiResponse.status}`);
+        }
+
+        const reader = apiResponse.body?.getReader();
+        const decoder = new TextDecoder();
+
+        if (!reader) {
+          throw new Error("Response body is not readable");
+        }
+
+        let assistantResponse = "";
+
+        while (true) {
+          const { done, value } = await reader.read();
+
+          if (done) break;
+
+          const chunk = decoder.decode(value, { stream: true });
+          assistantResponse += chunk;
+          setResponse(assistantResponse);
+        }
+
+        return assistantResponse;
+      } catch (err) {
+        console.error("Streaming error:", err);
+        const errorMessage =
+          err instanceof Error ? err.message : "An error occurred";
+        setError(errorMessage);
+        throw err;
+      } finally {
+        setIsLoading(false);
+      }
     },
-    onSuccess: async (e, { query, chatid }) => {
-      setIsStreaming(false);
-      await createMessage({
-        threadId: chatid,
-        userQuery: query,
-        aiResponse: [{ content: e.fullResponse, model: "Gemini 2.5 Flash" }],
-      });
-      // queryClient.invalidateQueries({ queryKey: ["thread-messages"] });
-    },
-    onError: (error) => {
-      setIsStreaming(false);
-      setError(error.message);
-    },
-  });
+    [isLoading]
+  );
+
+  const clearResponse = useCallback(() => {
+    setResponse("");
+    setError(null);
+  }, []);
 
   return {
-    currentResponse,
-    isStreaming,
+    isLoading,
     error,
-    mutate: mutation.mutate,
-    isPending: mutation.isPending,
+    response,
+    sendMessage,
+    clearResponse,
   };
 }

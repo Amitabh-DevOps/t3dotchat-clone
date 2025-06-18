@@ -38,7 +38,7 @@ const AuthPage = async () => {
         </p>
       </div>
       <form action={handleGoogleSignIn} className="w-full max-w-sm">
-        <Button className="w-full h-14 flex items-center gap-5" variant="t3">
+        <Button className="w-full h-14 text-lg flex items-center gap-5" variant="t3">
           <FcGoogle className="size-6 brightness-110" />
           Continue with Google
         </Button>

@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import QueryProvider from "@/components/providers/query-provider";
 import { Toaster } from "sonner";
+import { SessionProvider } from "next-auth/react";
 
 const proximaVara = localFont({
   src: "../assets/fonts/proxima_vara.woff2",
@@ -34,8 +35,10 @@ export default function RootLayout({
       >
         <ThemeProvider attribute="class">
           <QueryProvider>
+          <SessionProvider>
             {children}
             <Toaster position="bottom-right" />
+          </SessionProvider>
           </QueryProvider>
         </ThemeProvider>
       </body>
