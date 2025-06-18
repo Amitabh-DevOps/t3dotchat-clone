@@ -37,6 +37,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Edit } from 'lucide-react'
 import { DialogOverlay } from '@radix-ui/react-dialog'
+import threadsStore from '@/stores/threads.store'
 
 interface Thread {
   _id: string
@@ -59,6 +60,7 @@ const SidebarThreads = () => {
   const [renameDialogOpen, setRenameDialogOpen] = useState(false)
   const [selectedThread, setSelectedThread] = useState<Thread | null>(null)
   const [newTitle, setNewTitle] = useState('')
+  const {searchedThreads} = threadsStore()
 
   // Fetch threads using TanStack Query
   const {
@@ -275,10 +277,28 @@ const SidebarThreads = () => {
     )
   }
 
-  return (
-    <>
+  if(searchedThreads.length > 0){
+    return (
       <SidebarContent>
-        {/* Pinned Threads */}
+        <SidebarGroup>
+              <SidebarMenu>
+                {searchedThreads.map((thread) => (
+                  <ThreadItem 
+                    key={thread.threadId} 
+                    thread={thread as any} 
+                    showBranchIcon={thread.title.length > 20}
+                  />
+                ))}
+              </SidebarMenu>
+            </SidebarGroup>
+      </SidebarContent>
+    )
+
+  }
+    return (
+      <>
+        <SidebarContent>
+          {/* Pinned Threads */}
         {threads?.pin && threads.pin.length > 0 && (
           <SidebarGroup>
             <SidebarGroupLabel className="gap-1">

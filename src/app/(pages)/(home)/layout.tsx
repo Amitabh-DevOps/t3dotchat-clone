@@ -36,6 +36,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 
 async function ChatLayoutContent({ children }: { children: React.ReactNode }) {
+
   const session = await auth()
   console.log(session?.user)
   
@@ -132,14 +133,7 @@ export default async function ChatLayout({
                 </Button>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <DevInput
-                  className="!w-full gap-3"
-                  placeholder="Search your threads..."
-                  variant="underline"
-                  icon={
-                    <FiSearch className="w-3.5 h-3.5 text-muted-foreground ml-1" />
-                  }
-                />
+                <SearchThreads isSidebar />
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarHeader>
