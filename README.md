@@ -1,4 +1,6 @@
-# T4 Chat - Clone of T3.Chat
+# T4 Chat - Power Clone of T3.Chat
+
+![banner](public/banner.png)
 
 **🌐 Live Demo:** [https://t3dotchat-clone.vercel.app/](https://t3dotchat-clone.vercel.app/)
 
@@ -15,25 +17,23 @@ A powerful, feature-rich clone of [t3.chat](https://t3.chat) with advanced AI ca
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Node.js 18+, MongoDB, Google OAuth credentials
 
 ### Quick Setup
 
 1. **Clone & Install**
+
    ```bash
-   git clone https://github.com/your-username/t3dotchat-clone.git
+   git clone https://github.com/Huminexdotco/t3dotchat-clone.git
    cd t3dotchat-clone
    npm install
    ```
 
 2. **Environment Variables** - Create `.env.local`:
+
    ```env
-   MONGODB_URI=mongodb://localhost:27017/t3dotchat
-   NEXTAUTH_SECRET=your-super-secret-key-here
-   NEXTAUTH_URL=http://localhost:3000
-   GOOGLE_CLIENT_ID=your-google-client-id
-   GOOGLE_CLIENT_SECRET=your-google-client-secret
-   OPENROUTER_API_KEY=your-openrouter-api-key # Optional
+   Add all the environment variables from the .env.example file
    ```
 
 3. **Run**
@@ -52,17 +52,24 @@ npm run build
 npm start
 ```
 
-## 📋 Environment Variables Guide
+### Environment Variables Reference
 
-| Variable | Description | Required | Example |
-|----------|-------------|----------|---------|
-| `MONGODB_URI` | MongoDB connection string | ✅ | `mongodb://localhost:27017/t3dotchat` |
-| `NEXTAUTH_SECRET` | Secret key for NextAuth.js | ✅ | `your-super-secret-key` |
-| `NEXTAUTH_URL` | Base URL of your application | ✅ | `http://localhost:3000` |
-| `GOOGLE_CLIENT_ID` | Google OAuth client ID | ✅ | `123456789.googleusercontent.com` |
-| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret | ✅ | `your-google-secret` |
-| `OPENROUTER_API_KEY` | OpenRouter API key for enhanced models | ❌ | `sk-or-v1-...` |
-
+| Variable                       | Description                                | Required |
+| ------------------------------ | ------------------------------------------ | -------- |
+| `AUTH_SECRET`                  | Secret key for NextAuth.js                 | ✅       |
+| `MONGODB_URI`                  | MongoDB connection string                  | ✅       |
+| `AUTH_GOOGLE_ID`               | Google OAuth client ID                     | ✅       |
+| `AUTH_GOOGLE_SECRET`           | Google OAuth client secret                 | ✅       |
+| `PERSONAL_EMAIL`               | Email address for sending emails           | ✅       |
+| `EMAIL_PASSWORD`               | App password for email service             | ✅       |
+| `NEXT_PUBLIC_APP_URL`          | Base URL of the application                | ✅       |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | API key for Google's Generative AI         | ✅       |
+| `GEMINI_API_KEY`               | API key for Google's Gemini                | ✅       |
+| `TAVILY_API_KEY`               | API key for Tavily search                  | ✅       |
+| `NEXT_PUBLIC_CLOUDINARY_*`     | Cloudinary configuration for media uploads | ✅       |
+| `OPEN_ROUTER_REDIRECT_URI`     | Callback URL for OpenRouter OAuth          | ✅       |
+| `CODE_VERIFIER`                | Secret key for OpenRouter                  | ✅       |
+| `SECRET_KEY`                   | Application secret key                     | ✅       |
 
 ## 🤝 Contributing
 
@@ -105,4 +112,4 @@ SOFTWARE.
 
 ---
 
-Built with ❤️ by the Huminex team
+Built with ❤️ by the Huminex team developer [Devyansh](https://x.com/DevyanshYadavv) and [Aasu](https://x.com/Aasuyadavv)
