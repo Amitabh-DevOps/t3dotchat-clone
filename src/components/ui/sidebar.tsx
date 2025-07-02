@@ -96,8 +96,6 @@ const SidebarProvider = React.forwardRef<
     const setOpen = React.useCallback(
       (value: boolean | ((value: boolean) => boolean)) => {
         const openState = typeof value === "function" ? value(open) : value;
-        console.log("Sidebar open state changed", openState);
-        
         if (setOpenProp) {
           setOpenProp(openState);
         } else {

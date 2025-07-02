@@ -13,7 +13,7 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
-import { updateOpenRouterApiKey, updateKey } from "@/action/user.action";
+import { updateKey, removeOpenRouterApiKey } from "@/action/user.action";
 
 const DisconnectButton = () => {
   const [open, setOpen] = useState(false);
@@ -25,7 +25,7 @@ const DisconnectButton = () => {
     mutationFn: async () => {
       // Update both database and session
       await Promise.all([
-        updateOpenRouterApiKey(""),
+        removeOpenRouterApiKey(),
         updateKey({ openRouterApiKey: "" })
       ]);
     },

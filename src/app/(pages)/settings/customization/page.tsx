@@ -152,13 +152,13 @@ export default function CustomizationPage() {
 
   return (
     <div className="p-6 space-y-8">
-      <h1 className="text-2xl font-bold text-foreground mb-8">Customize T3 Chat</h1>
+      <h1 className="text-2xl font-bold text-foreground mb-8">Customize T4 Chat</h1>
       
       <div className="space-y-6">
         {/* Name Field */}
         <div className="space-y-2">
           <Label htmlFor="name" className="text-base">
-            What should T3 Chat call you?
+            What should T4 Chat call you?
           </Label>
           <div className="relative">
             <Input
@@ -196,7 +196,7 @@ export default function CustomizationPage() {
         {/* Traits Field */}
         <div className="space-y-3">
           <Label className="text-base">
-            What traits should T3 Chat have?{' '}
+            What traits should T4 Chat have?{' '}
             <span className="text-sm text-muted-foreground font-normal">
               (up to 50, max 100 chars each)
             </span>
@@ -256,7 +256,7 @@ export default function CustomizationPage() {
         {/* Additional Info Field */}
         <div className="space-y-2">
           <Label htmlFor="additional" className="text-base">
-            Anything else T3 Chat should know about you?
+            Anything else T4 Chat should know about you?
           </Label>
           <div className="relative">
             <Textarea

@@ -11,6 +11,7 @@ export interface userType extends Document {
     skills: string[];
     additionalInfo: string;
   }
+  geminiApiKey: string;
   models: {
     selected: string[];
     favorite: string[];

@@ -20,7 +20,7 @@ const AuthPage = async () => {
     });
   };
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-8">
+    <div className="flex min-h-dvh flex-col items-center justify-center p-8">
       <div className="absolute left-4 top-4">
         <Link href="/">
           <Button variant="ghost">

@@ -6,6 +6,7 @@ export interface ThreadType extends Document {
   title: string;
   isPinned: boolean;
   threadId: string;
+  parentFolderId?: mongoose.Types.ObjectId | null;
   parentChatId?: mongoose.Types.ObjectId | null;
   shareChatId?: mongoose.Types.ObjectId | null;
 }

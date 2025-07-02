@@ -13,6 +13,11 @@ const ThreadSchema = new Schema<ThreadType>(
         ref: "User",
         required: true,
     },
+    parentFolderId: {
+      type: Schema.Types.ObjectId,
+      ref: "Folder",
+      default: null,
+    },
     title: {
         type: String,
         trim: true,

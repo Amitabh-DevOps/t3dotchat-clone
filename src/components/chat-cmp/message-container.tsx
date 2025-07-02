@@ -1,31 +1,11 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import {
-  RefreshCcw,
-  SquarePen,
-  Copy,
-  Check,
-  GitBranch,
-  Search,
-  Cloud,
-  X,
-  Download,
-  WrapText,
-  Menu,
-  CopyCheck,
-  CopyCheckIcon,
-} from "lucide-react";
-import { parse } from "node-html-parser";
+import { RefreshCcw, SquarePen, Copy, Check, X } from "lucide-react";
 import { marked } from "marked";
-import { codeToHtml, createCssVariablesTheme, createHighlighter } from "shiki";
-import { renderToString } from "react-dom/server";
-import { LuCopy, LuText } from "react-icons/lu";
-import { Message as AiMessage } from "ai";
 import { useChatStream } from "@/hooks/use-chat-stream";
 import { regenerateAnotherResponse } from "@/action/message.action";
-import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import chatStore from "@/stores/chat.store";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
@@ -33,12 +13,15 @@ import { processSpecificT3Tags } from "@/lib/chat-parser";
 import { branchThread } from "@/action/thread.action";
 import BranchOffIcon from "../../../public/icons/branch-off";
 import { FiLoader } from "react-icons/fi";
-
+import { toast } from "sonner";
+import DevClipboard from "../global-cmp/dev-clipboard";
+import userStore from "@/stores/user.store";
+import DevTooltip from "../global-cmp/dev-tooltip";
 // Types
 interface Message {
   _id: string;
   userQuery: string;
-  aiResponse?: Array<{ content: string }>;
+  aiResponse?: Array<{ content: string; model: string; _id: string }>;
   attachment?: string;
 }
 
@@ -80,14 +63,15 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
   const router = useRouter();
 
   const queryClient = useQueryClient();
-  const { messages, setMessages, setIsRegenerate } = chatStore();
+  const { messages, setIsRegenerate } = chatStore();
+  const { currentModel, userData, currentService } = userStore();
   const retryMessage = async () => {
     setIsRegenerate(true);
     const attachment = message?.attachment;
     const trimmedQuery = message?.userQuery;
 
     if (!trimmedQuery?.trim()) {
-      console.log("No query to retry");
+      // console.log("No query to retry");
       return;
     }
 
@@ -104,11 +88,16 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
     };
 
     try {
-      const response = await sendMessage(promptMessage);
+      const response = await sendMessage({
+        messages: promptMessage,
+        model: currentModel,
+        service: currentService,
+        geminiApiKey: userData?.geminiApiKey || "",
+      });
 
       const generateResponse = await regenerateAnotherResponse({
         messageId: message?._id || "",
-        aiResponse: { content: response, model: "gpt-3.5-turbo" },
+        aiResponse: { content: response, model: currentModel },
       });
       if (generateResponse.error) {
         toast.error("Failed to regenerate response");
@@ -121,7 +110,13 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
                 ...message,
                 aiResponse: [
                   ...(message?.aiResponse || []),
-                  { content: response, model: "gpt-3.5-turbo" },
+                  {
+                    content: response,
+                    model: currentModel,
+                    _id: generateResponse?.data?.aiResponse?.[
+                      generateResponse?.data?.aiResponse?.length - 1
+                    ]?._id,
+                  },
                 ],
               };
             }
@@ -173,83 +168,87 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
           </button>
         </span>
       )}
-      <Button
-        variant="ghost"
-        size="icon"
+
+      <DevClipboard
         className="h-8 w-8 text-xs"
-        aria-label="Copy to clipboard"
-        onClick={onCopy}
-        data-state="closed"
-      >
-        <div className="relative size-4">
-          <Copy
-            className="absolute inset-0 h-4 w-4 transition-[opacity, translate-x] duration-200 ease-snappy scale-100 opacity-100"
-            aria-hidden="true"
-          />
-          <Check
-            className="absolute inset-0 h-4 w-4 transition-[opacity, translate-x] duration-200 ease-snappy scale-0 opacity-0"
-            aria-hidden="true"
-          />
-        </div>
-      </Button>
+        textClip={
+          (role === "user"
+            ? userQuery
+            : message?.aiResponse?.[responseIndex]?.content) || ""
+        }
+        beforeCopy={<Copy aria-hidden="true" />}
+        afterCopy={<Check aria-hidden="true" />}
+      />
 
       {role === "assistant" && (
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 text-xs"
-          aria-label="Branch off message"
-          onClick={() => handleBranch(messageId as string)}
-          data-state="closed"
-        >
-          <div className="relative size-4 *:text-muted-foreground">
-            {isBranching ? (
-              <FiLoader className="animate-spin" />
-            ) : (
-              <BranchOffIcon />
-            )}
-          </div>
-        </Button>
+        <DevTooltip tipData="Branch off">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-xs"
+            aria-label="Branch off message"
+            onClick={() => handleBranch(messageId as string)}
+            data-state="closed"
+          >
+            <div className="relative size-4 *:text-muted-foreground">
+              {isBranching ? (
+                <FiLoader className="animate-spin" />
+              ) : (
+                <BranchOffIcon />
+              )}
+            </div>
+          </Button>
+        </DevTooltip>
       )}
 
       {role === "assistant" && (
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 text-xs"
-          aria-label="Retry message"
-          onClick={retryMessage}
-          data-action="retry"
-          data-state="closed"
-        >
-          <div className="relative size-4">
-            <RefreshCcw
-              className={`${isLoading ? "animate-spin" : "h-4 w-4"}`}
-              aria-hidden="true"
-            />
-            <span className="sr-only">Retry</span>
-          </div>
-        </Button>
+        <DevTooltip tipData="Retry message">
+          <Button
+            variant="ghost"
+            size="icon"
+            disabled={isLoading}
+            className="h-8 w-8 text-xs"
+            aria-label="Retry message"
+            onClick={retryMessage}
+            data-action="retry"
+            data-state="closed"
+          >
+            <div className="relative size-4">
+              <RefreshCcw
+                className={`${isLoading ? "animate-spin" : "h-4 w-4"}`}
+                aria-hidden="true"
+              />
+              <span className="sr-only">Retry</span>
+            </div>
+          </Button>
+        </DevTooltip>
       )}
 
       {role === "user" && (
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 text-xs"
-          aria-label="Edit message"
-          data-state="closed"
-          onClick={onEdit}
-        >
-          <SquarePen className="h-4 w-4" aria-hidden="true" />
-        </Button>
+        <DevTooltip tipData="Edit message">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-xs"
+            aria-label="Edit message"
+            data-state="closed"
+            onClick={onEdit}
+          >
+            <SquarePen className="h-4 w-4" aria-hidden="true" />
+          </Button>
+        </DevTooltip>
       )}
 
-      {/* {modelName && (
-        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-          <span>{modelName}</span>
+      {role === "assistant" && (
+        <div className="flex items-center text-nowrap pointer-events-none select-none gap-1 text-xs text-muted-foreground capitalize">
+          <span>
+            {message?.aiResponse?.[responseIndex]?.model
+              .split("/")[1]
+              .trim()
+              .replace(/-/g, " ")}
+          </span>
         </div>
-      )} */}
+      )}
     </div>
   );
 };
@@ -261,6 +260,7 @@ interface UserMessageProps {
   attachmentUrl?: string;
   messageId?: string;
   onRetry?: () => void;
+  userQuery?: string;
   onEdit?: () => void;
   onCopy?: () => void;
 }
@@ -269,6 +269,7 @@ export const UserMessage: React.FC<UserMessageProps> = ({
   content,
   messageId,
   onRetry,
+  userQuery,
   attachmentUrl,
   onEdit,
   onCopy,
@@ -302,8 +303,8 @@ export const UserMessage: React.FC<UserMessageProps> = ({
 
   return (
     <div
-      data-message-id={messageId}
-      className="flex relative justify-end items-end flex-col"
+      data-query-id={messageId}
+      className="flex relative justify-end items-end flex-col duration-300 animate-in fade-in-50 zoom-in-95"
     >
       {isEditing ? (
         <div className="flex items-end gap-1 flex-col w-full ">
@@ -318,8 +319,8 @@ export const UserMessage: React.FC<UserMessageProps> = ({
           />
           <MessageActions
             role="user"
+            userQuery={content}
             onEdit={handleEdit}
-            onCopy={onCopy}
             showBranch={false}
             showEdit={true}
           />
@@ -385,6 +386,7 @@ interface AIResponseProps {
   message?: Message;
   messageId?: string;
   isStreaming?: boolean;
+  subMessageId?: string;
   isLoading?: boolean;
   modelName?: string;
   onRetry?: () => void;
@@ -394,9 +396,10 @@ interface AIResponseProps {
 
 export const AIResponse: React.FC<AIResponseProps> = ({
   content,
-  responseIndex,
+  responseIndex = 0,
   setResponseIndex,
   totalResponses,
+  subMessageId,
   message,
   messageId,
   isStreaming = false,
@@ -423,7 +426,11 @@ export const AIResponse: React.FC<AIResponseProps> = ({
   }, [content]);
 
   return (
-    <div data-message-id={messageId} className="flex justify-start">
+    <div
+      data-message-id={messageId}
+      data-sub-message-id={subMessageId}
+      className="flex justify-start"
+    >
       <div className="group relative w-full max-w-full break-words">
         <div
           role="article"
@@ -470,44 +477,30 @@ export const AIResponse: React.FC<AIResponseProps> = ({
 // Message Pair Component (User + AI Response)
 interface MessagePairProps {
   message: Message;
-  onRetryUser?: () => void;
-  onEditUser?: () => void;
-  onCopyUser?: () => void;
-  onRetryAI?: () => void;
-  onCopyAI?: () => void;
-  onBranchAI?: () => void;
 }
 
-export const MessagePair: React.FC<MessagePairProps> = ({
-  message,
-  onRetryUser,
-  onEditUser,
-  onCopyUser,
-  onRetryAI,
-  onCopyAI,
-  onBranchAI,
-}) => {
+const MessagePair: React.FC<MessagePairProps> = ({ message }) => {
   const [responseIndex, setResponseIndex] = useState(0);
   const aiContent = message?.aiResponse?.[responseIndex]?.content || "";
+  const subMessageId = message?.aiResponse?.[responseIndex]?._id || "";
   return (
     <div className="space-y-16">
       <UserMessage
         content={message.userQuery}
         attachmentUrl={message.attachment}
         messageId={message._id}
-        onEdit={onEditUser}
-        onCopy={onCopyUser}
       />
       <AIResponse
         content={aiContent}
+        subMessageId={subMessageId}
         message={message}
         totalResponses={message.aiResponse?.length || 0}
         responseIndex={responseIndex}
         setResponseIndex={setResponseIndex}
         messageId={message._id}
-        onCopy={onCopyAI}
-        onBranch={onBranchAI}
       />
     </div>
   );
 };
+
+export default MessagePair;

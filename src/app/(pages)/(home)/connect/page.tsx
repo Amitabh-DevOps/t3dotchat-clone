@@ -1,6 +1,6 @@
 import React from "react";
-import OpenRouterConnect from "@/components/open-router/open-router-connect";
-import { getUser } from "@/action/user.action";
+import OpenRouterConnect from "@/components/connect-key/open-router-connect";
+import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 
 const page = async ({
@@ -9,13 +9,12 @@ const page = async ({
   searchParams: Promise<{ code: string }>;
 }) => {
   const code = (await searchParams).code;
-  // const user = await getUser();
-  // if (user?.data?.openRouterApiKey && user?.data?.openRouterApiKey.trim() != "") {
-  //   redirect("/");
-  // }
-
+  const user = await auth();
+  if (!user) {
+    return redirect("/auth");
+  }
   return (
-    <div>
+    <div className=" mt-10 mb-40">
       <OpenRouterConnect code={code} />
     </div>
   );

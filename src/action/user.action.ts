@@ -6,6 +6,39 @@ import { auth } from "@/auth";
 import { unstable_update as update } from "@/auth";
 import { encrypt } from "@/lib/secure-pwd";
 
+export const createOrUpdateGeminiKey = async (key: string) => {
+  const session = await auth();
+  if (!session?.user) {
+    return {
+      data: null,
+      error: "Unauthorized",
+    };
+  }
+  try {
+    await connectDB();
+
+    const user = await User.findById(session.user.id);
+
+    if (!user) {
+      return {
+        data: null,
+        error: "User not found",
+      };
+    }
+    user.geminiApiKey = encrypt(key);
+    const updatedUser = await user.save();
+    return {
+      data: serializeData(updatedUser),
+      error: null,
+    };
+  } catch (error: any) {
+    return {
+      data: null,
+      error: error.message,
+    };
+  }
+};
+
 export const updateKey = async (data: any) => {
   const session = await auth();
   if (!session?.user || !data) {
@@ -168,11 +201,41 @@ export const updateOpenRouterApiKey = async (key: string) => {
   }
 };
 
-export const updateModels = async ({
-  selected,
-}: {
-  selected?: string[];
-}) => {
+export const removeOpenRouterApiKey = async () => {
+  const session = await auth();
+  if (!session?.user) {
+    return {
+      data: null,
+      error: "Unauthorized",
+    };
+  }
+  try {
+    await connectDB();
+
+    const user = await User.findById(session.user.id);
+
+    if (!user) {
+      return {
+        data: null,
+        error: "User not found",
+      };
+    }
+
+    user.openRouterApiKey = "";
+    await user.save();
+    return {
+      data: serializeData(user),
+      error: null,
+    };
+  } catch (error: any) {
+    return {
+      data: null,
+      error: error,
+    };
+  }
+};
+
+export const updateModels = async ({ selected }: { selected?: string[] }) => {
   const session = await auth();
 
   if (!session?.user) {

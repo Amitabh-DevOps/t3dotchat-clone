@@ -107,7 +107,7 @@ const SidebarSearch = () => {
 
   const handleThreadSelect = (thread: Thread) => {
     // Handle thread selection here - replace with your navigation logic
-    console.log("Selected thread:", thread);
+    // console.log("Selected thread:", thread);
     setSearchQuery("");
     setIsDropdownOpen(false);
     setSelectedIndex(-1);

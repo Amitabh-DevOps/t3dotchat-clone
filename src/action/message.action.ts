@@ -5,6 +5,73 @@ import { serializeData } from "@/lib/constant";
 import Thread from "@/models/thread.model";
 import connectDB from "@/config/db";
 import { MessageType } from "@/types/message.type";
+import { createThread } from "./thread.action";
+
+export const updateSelectedText = async ({
+  messageId,
+  subMessageId,
+  content,
+}: {
+  messageId: string;
+  subMessageId: string;
+  content: string;
+}) => {
+  const session = await auth();
+
+  if (!session?.user) {
+    return {
+      data: null,
+      error: "Unauthorized",
+    };
+  }
+
+  try {
+    await connectDB();
+
+    const message = await Message.findOne({
+      _id: messageId,
+      userId: session.user.id,
+    });
+
+    if (!message) {
+      return {
+        data: null,
+        error: "Message not found",
+      };
+    }
+
+    // Find and update the specific AI response in the aiResponse array
+    const aiResponseIndex = message.aiResponse.findIndex(
+      (aiRes: any) =>
+        aiRes._id.toString() === subMessageId || aiRes._id === subMessageId
+    );
+
+    if (aiResponseIndex === -1) {
+      return {
+        data: null,
+        error: "AI response not found",
+      };
+    }
+
+    // Update the content of the specific AI response
+    message.aiResponse[aiResponseIndex].content = content;
+
+    // Mark the aiResponse array as modified for MongoDB
+    message.markModified("aiResponse");
+
+    await message.save();
+
+    return {
+      data: serializeData(message),
+      error: null,
+    };
+  } catch (error: any) {
+    return {
+      data: null,
+      error: error.message || "Failed to update message",
+    };
+  }
+};
 
 export const getMessages = async ({ threadId }: { threadId: string }) => {
   const session = await auth();
@@ -121,16 +188,23 @@ export const getMessageUsage = async () => {
 export const createMessage = async ({
   threadId,
   userQuery,
+  isNewThread,
   aiResponse,
+  geminiApiKey,
+  service,
+  model,
   attachment,
 }: {
   threadId: string;
   userQuery: string;
+  isNewThread?: boolean;
   aiResponse: { content: string; model: string }[];
+  geminiApiKey?: string;
+  service: string;
+  model: string;
   attachment?: string;
 }) => {
   const session = await auth();
-
   if (!session?.user) {
     return {
       data: null,
@@ -140,7 +214,7 @@ export const createMessage = async ({
   try {
     await connectDB();
 
-    const countMessages = await getMessageUsage();
+    // const countMessages = await getMessageUsage();
 
     // if (countMessages.data && countMessages.data >= 20) {
     //   return {
@@ -148,6 +222,16 @@ export const createMessage = async ({
     //     error: "You have reached the maximum number of messages for today",
     //   };
     // }
+
+    if (isNewThread) {
+      const newThread = await createThread({
+        threadId,
+        title: userQuery,
+        geminiApiKey,
+        service,
+        model,
+      });
+    }
 
     const thread = await Thread.findOne({
       threadId: threadId,
@@ -160,7 +244,6 @@ export const createMessage = async ({
         error: "Thread not found",
       };
     }
-    console.log("me who who who");
     const message = await Message.create({
       threadId,
       userId: session.user.id,
@@ -168,7 +251,6 @@ export const createMessage = async ({
       aiResponse,
       attachment: attachment || "",
     });
-    console.log(message, "save message");
     return {
       data: serializeData(message),
       error: null,

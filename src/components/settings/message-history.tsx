@@ -86,7 +86,7 @@ const MessageHistory = ({ data }: MessageHistoryProps) => {
 
   const handleExport = () => {
     // Implementation for export functionality
-    console.log("Exporting messages:", selectedMessages);
+    // console.log("Exporting messages:", selectedMessages);
   };
 
   const handleDelete = () => {
@@ -105,7 +105,7 @@ const MessageHistory = ({ data }: MessageHistoryProps) => {
 
   const handleImport = () => {
     // Implementation for import functionality
-    console.log("Importing messages");
+    // console.log("Importing messages");
   };
 
   const allSelected = selectedMessages.length === messages.length;

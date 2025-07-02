@@ -1,6 +1,5 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { Button } from "../ui/button";
 import {
   LuCode,
   LuGraduationCap,
@@ -8,9 +7,12 @@ import {
   LuSparkles,
 } from "react-icons/lu";
 import PresetMsg from "./preset-msg";
+import { auth } from "@/auth";
+import ServiceTab from "./service-tab";
 
-const HomeChat = () => {
-  const userName = "User";
+const HomeChat = async () => {
+  const session = await auth();
+  const userName = session?.user?.name?.split(" ")[0] || "User";
   const actionButtons = [
     { label: "Create", value: "create", icon: <LuSparkles /> },
     { label: "Explore", value: "explore", icon: <LuNewspaper /> },
@@ -49,20 +51,29 @@ const HomeChat = () => {
       className="mx-auto flex w-full max-w-3xl flex-col space-y-12 px-4 pb-10 pt-safe-offset-10"
     >
       <div className="flex h-[calc(100vh-20rem)] items-start justify-center">
-        <div className="w-full space-y-6 px-2 pt-[20vh] duration-300 animate-in fade-in-50 zoom-in-95 sm:px-8">
-          <h2 className="text-3xl font-semibold">
+        <div
+          className={`w-full space-y-6 px-2 duration-300 animate-in fade-in-50 zoom-in-95 sm:px-8 ${
+            session ? "pt-[10vh]" : "pt-[20vh]"
+          }`}
+        >
+          {session && (
+            <Suspense fallback={<div />}>
+              <ServiceTab />
+            </Suspense>
+          )}
+          <h2 className="text-2xl md:text-3xl font-semibold">
             How can I help you, {userName}?
           </h2>
           <Tabs defaultValue="create" className="w-full">
-            <TabsList className="flex p-0 flex-row flex-wrap gap-2.5 text-sm max-sm:justify-evenly bg-transparent">
+            <TabsList className="flex p-0 !h-auto justify-center flex-row flex-wrap gap-2.5 text-sm max-sm:justify-evenly bg-transparent">
               {actionButtons.map((tab, index) => (
                 <TabsTrigger
                   className="
-               justify-center  whitespace-nowrap text-sm transition-[opacity, translate-x]
+               justify-center flex-col rounded-xl md:flex-row !h-auto md:h-9  whitespace-nowrap text-sm transition-[opacity, translate-x]
                focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring
-               disabled:cursor-not-allowed disabled:opacity-50
+               disabled:cursor-not-allowed !max-w-fit disabled:opacity-50
                [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0
-               h-9 flex items-center gap-2 rounded-full px-5 py-2 font-semibold
+               h-9 flex items-center gap-2 md:rounded-full px-3 md:px-5 py-2 font-semibold
                outline-1 outline-secondary/70 backdrop-blur-xl shadow
                !border-0 border-reflect button-reflect
                bg-background 
@@ -95,7 +106,7 @@ const HomeChat = () => {
             {actionButtons.map((tab) => (
               <TabsContent className="mt-5" key={tab.value} value={tab.value}>
                 <div className="flex flex-col text-foreground">
-                 <PresetMsg presetMessages={presetMessages} tab={tab} />
+                  <PresetMsg presetMessages={presetMessages} tab={tab} />
                 </div>
               </TabsContent>
             ))}

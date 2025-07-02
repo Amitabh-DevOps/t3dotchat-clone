@@ -31,6 +31,10 @@ const UserSchema = new Schema<userType>(
         type: String,
       },
     },
+    geminiApiKey: {
+      type: String,
+      default: "",
+    },
     models: {
       selected: {
         type: [String],
@@ -41,6 +45,7 @@ const UserSchema = new Schema<userType>(
     },
     openRouterApiKey: {
       type: String,
+      default: "",
     },
     // apiKeys will implement later
     apiKeys: [

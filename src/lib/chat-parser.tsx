@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { parse } from "node-html-parser";
 import { marked } from "marked";
@@ -10,8 +9,8 @@ import { BiSolidMessageRoundedError } from "react-icons/bi";
 import { LuCopy, LuText } from "react-icons/lu";
 import { FiLoader } from "react-icons/fi";
 import Link from "next/link";
-
-// T3 Tag Processor (FIXED VERSION)
+import { CiGlobe } from "react-icons/ci";
+// T4 Tag Processor (FIXED VERSION)
 export const processSpecificT3Tags = async (
   content: string,
   tagConfigs = {}
@@ -35,7 +34,8 @@ export const processSpecificT3Tags = async (
     highlighter = await createHighlighter({
       langs: [
         "javascript",
-        "typescript","mermaid",
+        "typescript",
+        "mermaid",
         "python",
         "html",
         "css",
@@ -64,7 +64,14 @@ export const processSpecificT3Tags = async (
       const alt = element.getAttribute("alt") || "Generated image";
       return `<img src="${imageUrl}" class="w-[400px] t3-tool-output bg-background rounded-xl border border-input object-cover aspect-square h-auto" alt="${alt}" />`;
     },
-
+    "t3-websearch": (element: any) => {
+      const searchedContent = element.innerHTML;
+      return `<div class="t3-tool-output bg-background rounded-xl *:p-2">
+      <div class="w-full border-b border-input flex items-center gap-2">${renderToString(
+        <CiGlobe />
+      )} Search Results</div>
+      <div>${searchedContent}</div></div>`;
+    },
     pre: async (element: any) => {
       // Helper function to escape HTML for fallback
       const escapeHtml = (text: string) => {
@@ -82,12 +89,14 @@ export const processSpecificT3Tags = async (
 
       // Get the raw HTML content first
       let rawHtml = element.innerHTML;
-      let codeContent = '';
-      let lang = 'javascript';
+      let codeContent = "";
+      let lang = "javascript";
 
       // Try to extract language and content from the HTML structure
-      const codeMatch = rawHtml.match(/<code[^>]*class="[^"]*language-(\w+)[^"]*"[^>]*>([\s\S]*?)<\/code>/);
-      
+      const codeMatch = rawHtml.match(
+        /<code[^>]*class="[^"]*language-(\w+)[^"]*"[^>]*>([\s\S]*?)<\/code>/
+      );
+
       if (codeMatch) {
         // Found a code element with language class
         lang = codeMatch[1];
@@ -100,25 +109,25 @@ export const processSpecificT3Tags = async (
           // Try to get language from pre element
           const preClassAttr = element.getAttribute("class") || "";
           const preLangMatch = preClassAttr.match(/language-(\w+)/);
-          lang = element.getAttribute("lang") || (preLangMatch ? preLangMatch[1] : 'javascript');
+          lang =
+            element.getAttribute("lang") ||
+            (preLangMatch ? preLangMatch[1] : "javascript");
         } else {
           // No code element, treat as plain pre content
           codeContent = rawHtml;
           const preClassAttr = element.getAttribute("class") || "";
           const preLangMatch = preClassAttr.match(/language-(\w+)/);
-          lang = element.getAttribute("lang") || (preLangMatch ? preLangMatch[1] : 'javascript');
+          lang =
+            element.getAttribute("lang") ||
+            (preLangMatch ? preLangMatch[1] : "javascript");
         }
       }
 
       // Clean up the content - decode HTML entities
       codeContent = htmlDecode(codeContent.trim());
-
-      console.log('Debug - Raw HTML:', rawHtml);
-      console.log('Debug - Language detected:', lang);
-      console.log('Debug - Code content:', codeContent.substring(0, 100) + '...');
-
-      const title = element.getAttribute("title") ||
-                   lang.charAt(0).toUpperCase() + lang.slice(1);
+      const title =
+        element.getAttribute("title") ||
+        lang.charAt(0).toUpperCase() + lang.slice(1);
 
       let highlighted = `<pre><code class="language-${lang}">${escapeHtml(
         codeContent
@@ -142,7 +151,9 @@ export const processSpecificT3Tags = async (
 
       // Create enhanced code block with header and proper data attributes
       return `
-    <div class="enhanced-code-block rounded-md overflow-hidden my-4" data-lang="${lang}" data-code="${escapeHtml(codeContent)}">
+    <div class="enhanced-code-block rounded-md overflow-hidden my-4" data-lang="${lang}" data-code="${escapeHtml(
+        codeContent
+      )}">
       <div class="flex items-center justify-between px-4 py-1 bg-secondary border-b border-border">
         <div class="flex items-center gap-2">
                 <span style="font-family: 'consolas', monospace;" class="text-sm font-medium text-foreground">${title}</span>
@@ -189,20 +200,42 @@ export const processSpecificT3Tags = async (
       const content = element.textContent;
 
       return `
-        <div class="p-3 px-4 bg-background t3-tool-loader w-fit flex items-center gap-2 rounded-xl">${content} ${renderToString(<FiLoader className="animate-spin" />)}</div>
+        <div class="p-3 px-4 bg-background t3-tool-loader w-fit flex items-center gap-2 rounded-xl">${content} ${renderToString(
+        <FiLoader className="animate-spin" />
+      )}</div>
       `;
     },
     "t3-error": (element: any) => {
       const content = element.textContent;
 
       return `
-        <div class="p-3 text-white px-4 bg-primary border border-primary/50 t3-tool-loader w-fit flex items-center gap-2 rounded-xl"> ${renderToString(<BiSolidMessageRoundedError className="text-2xl" />)} ${content}
-        ${renderToString(<Link target="_blank" href="https://openrouter.ai/" className="text-white">Visit Now</Link>)}
+        <div class="p-3 !text-white px-4 bg-primary border border-primary/50 t3-tool-loader w-fit flex items-center gap-2 rounded-xl"> ${renderToString(
+          <BiSolidMessageRoundedError className="text-2xl" />
+        )} ${content}
+        ${renderToString(
+          <Link href="/settings/subscription" className="!text-white">
+            Check Now
+          </Link>
+        )}
+        </div>
+      `;
+    },
+    "t3-gemini": (element: any) => {
+      const content = element.textContent;
+
+      return `
+        <div class="p-3 !text-white px-4 bg-primary border border-primary/50 t3-tool-loader w-fit flex items-center gap-2 rounded-xl"> ${renderToString(
+          <BiSolidMessageRoundedError className="text-2xl" />
+        )} ${content}
+        ${renderToString(
+          <Link href="/connect?service=gemini" className="!text-white">
+            Check Now
+          </Link>
+        )}
         </div>
       `;
     },
   };
-
 
   const configs = { ...defaultConfigs, ...tagConfigs };
   const processedTags: any[] = [];
@@ -213,7 +246,9 @@ export const processSpecificT3Tags = async (
 
     for (const element of elements) {
       try {
-        const replacement = await configs[tagName as keyof typeof configs](element);
+        const replacement = await configs[tagName as keyof typeof configs](
+          element
+        );
         if (replacement) {
           element.replaceWith(replacement);
           processedTags.push({
@@ -229,7 +264,7 @@ export const processSpecificT3Tags = async (
     }
   }
 
-  // IMPORTANT: Process regular markdown code blocks AFTER T3 tags
+  // IMPORTANT: Process regular markdown code blocks AFTER T4 tags
 
   return {
     processedHtml: root.toString(),

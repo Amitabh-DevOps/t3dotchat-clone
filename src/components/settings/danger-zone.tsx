@@ -9,17 +9,17 @@ import { Trash2 } from "lucide-react";
 const DangerZone = () => {
   const handleRestoreLegacyData = () => {
     // Implementation for restoring legacy local data
-    console.log("Restoring legacy local data");
+    // console.log("Restoring legacy local data");
   };
 
   const handleRestoreOldChats = () => {
     // Implementation for restoring old chats
-    console.log("Restoring old chats");
+    // console.log("Restoring old chats");
   };
 
   const handleDeleteChatHistory = () => {
     // Implementation for deleting chat history
-    console.log("Deleting chat history");
+    // console.log("Deleting chat history");
   };
 
   return (

@@ -55,7 +55,6 @@ export const getCredit = async () => {
         error: user.error,
       };
     }
-    console.log(user, "me who am i");
     const apiKey = decrypt(user?.data?.openRouterApiKey as string);
 
     const url = "https://openrouter.ai/api/v1/credits";

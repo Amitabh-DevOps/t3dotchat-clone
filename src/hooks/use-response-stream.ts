@@ -25,10 +25,12 @@ interface UseStreamResponseReturn {
     chatid,
     attachmentUrl,
     resetAttachment,
+    isNewThread,
   }: {
     chatid: string;
     attachmentUrl?: string;
     resetAttachment?: () => void;
+    isNewThread?: boolean;
   }) => Promise<void>;
   clearMessages: () => void;
 }
@@ -42,12 +44,14 @@ export function useStreamResponse(): UseStreamResponseReturn {
       chatid,
       attachmentUrl,
       resetAttachment,
+      isNewThread,
     }: {
       chatid: string;
       attachmentUrl?: string;
       resetAttachment?: () => void;
+      isNewThread?: boolean;
     }) => {
-      const {currentModel} = userStore.getState()      
+      const {currentModel,userData, currentService} = userStore.getState()      
       const { query, messages, setMessages, setQuery, isWebSearch } = chatStore.getState();
       if (!query?.trim() || isLoading) return;
       const trimmedQuery = query.trim();
@@ -116,6 +120,9 @@ export function useStreamResponse(): UseStreamResponseReturn {
           },
           body: JSON.stringify({
             messages: apiMessages,
+            model: currentModel,
+            service: currentService,
+            geminiApiKey: userData?.geminiApiKey,
             isWebSearch: isWebSearch,
           }),
         });
@@ -160,7 +167,11 @@ export function useStreamResponse(): UseStreamResponseReturn {
         // Save message to database
         const savedMessage = await createMessage({
           threadId: chatid,
+          isNewThread,
           userQuery: trimmedQuery, // Use trimmedQuery instead of query
+          geminiApiKey: userData?.geminiApiKey || "",
+          service: currentService,
+          model: currentModel,
           attachment: attachment,
           aiResponse: [
             { content: assistantResponse, model: currentModel },

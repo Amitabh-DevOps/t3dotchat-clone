@@ -34,20 +34,18 @@ import SidebarThreads from "@/components/global-cmp/sidebar-threads";
 import { getUser } from "@/action/user.action";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
+import DevTooltip from "@/components/global-cmp/dev-tooltip";
 
 async function ChatLayoutContent({ children }: { children: React.ReactNode }) {
-
-  const session = await auth()
-  console.log(session?.user)
-  
-
+  const session = await auth();
+    console.log(session, "user session");
   return (
-    <div className={` h-screen w-full flex flex-col overflow-hidden `}>
+    <div className={` h-dvh w-full flex flex-col overflow-hidden `}>
       <ChatHeader />
       <main
         className={`
          flex-1 overflow-hidden z-20  border-chat-border bg-chat-background 
-         transition-[margin-top,height] mt-3.5 h-full border rounded-tl-xl duration-100 ease-snappy has-[.sidebar-check:checked]:mt-0 has-[.sidebar-check:checked]:h-screen has-[.sidebar-check:checked]:rounded-none
+         transition-[margin-top,height,rounded] md:mt-3.5 h-full md:border md:rounded-tl-xl duration-100 ease-snappy has-[.sidebar-check:checked]:mt-0 has-[.sidebar-check:checked]:h-dvh has-[.sidebar-check:checked]:rounded-none
         
       `}
       >
@@ -56,7 +54,7 @@ async function ChatLayoutContent({ children }: { children: React.ReactNode }) {
           type="checkbox"
           name="sidebar-check"
         />
-        <div className=" h-full overflow-y-auto">{children}</div>
+        <div className=" h-full overflow-y-auto pt-5 md:pt-0">{children}</div>
         <div className="max-w-3xl relative mx-auto w-full">
           <ChatInput />
         </div>
@@ -65,7 +63,7 @@ async function ChatLayoutContent({ children }: { children: React.ReactNode }) {
       <div className="pointer-events-auto t3-header-search fixed h-fit left-2 top-2 z-50 flex flex-row gap-0.5 p-1 inset-0 right-auto text-muted-foreground rounded-md backdrop-blur-sm transition-[width] delay-125 duration-100  bg-sidebar blur-fallback:bg-sidebar max-sm:delay-125 max-sm:duration-100 max-sm:w-[6.75rem] max-sm:bg-sidebar">
         <SidebarTrigger />
         <div
-          className={`transition-[opacity, translate-x] has-[.sidebar-check:not(:checked)]:pointer-events-none  flex flex-nowrap duration-200 ease-snappy gap-0.5 has-[.sidebar-check:not(:checked)]:-translate-x-[20px] has-[.sidebar-check:not(:checked)]:opacity-0 has-[.sidebar-check:not(:checked)]:w-0 has-[.sidebar-check:not(:checked)]:-z-50 has-[.sidebar-check:not(:checked)]:h-0 `}
+          className={`transition-[opacity, translate-x] md:has-[.sidebar-check:not(:checked)]:pointer-events-none  flex flex-nowrap duration-200 ease-snappy gap-0.5 md:has-[.sidebar-check:not(:checked)]:-translate-x-[20px] md:has-[.sidebar-check:not(:checked)]:opacity-0 md:has-[.sidebar-check:not(:checked)]:w-0 md:has-[.sidebar-check:not(:checked)]:-z-50 md:has-[.sidebar-check:not(:checked)]:h-0 `}
         >
           <input
             className="hidden sidebar-check"
@@ -81,7 +79,7 @@ async function ChatLayoutContent({ children }: { children: React.ReactNode }) {
         </div>
       </div>
       <div
-        className={`fixed pointer-events-auto  right-2  top-2 z-50 flex flex-row p-1 items-center justify-center  rounded-md duration-100   transition-[translate-x] ease-snappy  max-sm:w-[6.75rem]   gap-2  text-muted-foreground has-[.sidebar-check:checked]:bg-sidebar has-[.sidebar-check:checked]:backdrop-blur-sm has-[.sidebar-check:not(:checked)]:bg-transparent`}
+        className={`fixed pointer-events-auto  right-2  top-2 z-50 flex flex-row p-1 items-center justify-center bg-sidebar rounded-md duration-100   transition-[translate-x] ease-snappy   gap-1  text-muted-foreground md:has-[.sidebar-check:checked]:bg-sidebar md:has-[.sidebar-check:checked]:backdrop-blur-sm md:has-[.sidebar-check:not(:checked)]:bg-transparent`}
       >
         <input
           className="hidden sidebar-check"
@@ -89,9 +87,11 @@ async function ChatLayoutContent({ children }: { children: React.ReactNode }) {
           name="sidebar-check"
         />
         <Link href="/settings/subscription">
+        <DevTooltip tipData="Settings">
         <Button variant="ghost" size="icon">
           <LuSettings2 />
         </Button>
+        </DevTooltip>
         </Link>
         <ThemeToggle />
       </div>

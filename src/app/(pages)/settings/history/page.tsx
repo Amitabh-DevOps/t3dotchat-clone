@@ -6,8 +6,6 @@ import { searchThread } from '@/action/thread.action'
 
 const page = async () => {
   const { data, error } = await searchThread({});
-  console.log("data", data);
-  console.log("error", error);
   return (
     <div className="p-4">
       <MessageHistory data={data} />

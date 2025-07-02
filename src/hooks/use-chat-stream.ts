@@ -14,7 +14,17 @@ interface UseStreamResponseReturn {
   isLoading: boolean;
   error: string | null;
   response: string;
-  sendMessage: (promptMessage: AiMessage) => Promise<string>;
+  sendMessage: ({
+    messages,
+    model,
+    service,
+    geminiApiKey,
+  }: {
+    messages: AiMessage[];
+    model: string;
+    service: string;
+    geminiApiKey: string;
+  }) => Promise<string>;
   clearResponse: () => void;
 }
 
@@ -24,7 +34,17 @@ export function useChatStream(): UseStreamResponseReturn {
   const [response, setResponse] = useState("");
 
   const sendMessage = useCallback(
-    async (promptMessage: AiMessage): Promise<string> => {
+    async ({
+      messages,
+      model,
+      service,
+      geminiApiKey,
+    }: {
+      messages: AiMessage[];
+      model: string;
+      service: string;
+      geminiApiKey: string;
+    }): Promise<string> => {
       if (isLoading) return "";
 
       setIsLoading(true);
@@ -38,7 +58,10 @@ export function useChatStream(): UseStreamResponseReturn {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            messages: [promptMessage],
+            messages:[messages],
+            model,
+            service,
+            geminiApiKey,
           }),
         });
 

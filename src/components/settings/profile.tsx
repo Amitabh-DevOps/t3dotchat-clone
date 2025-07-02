@@ -2,25 +2,25 @@ import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getUser } from "@/action/user.action";
 import { getMessageUsage } from "@/action/message.action";
 import { Card } from "../ui/card";
 import { Button } from "../ui/button";
-import { AlertTriangle, Info } from "lucide-react";
+import { AlertTriangle, Info, Key } from "lucide-react";
 import Link from "next/link";
 import { getCredit } from "@/action/open-router.action";
 import { redirect } from "next/navigation";
 import DisconnectButton from "./disconnect-button";
+import { Gemini, OpenRouter } from "@lobehub/icons";
 
 const Profile = async () => {
-  const [userData, creditData] = await Promise.all([
-    getUser(),
-    getCredit(),
-  ]);
+  const [userData, creditData] = await Promise.all([getUser(), getCredit()]);
 
   const user = userData.data;
   console.log("creditData", creditData);
-  
+  console.log("userData", userData);
+
   return (
     <div className="w-80">
       {/* Profile Section */}
@@ -38,114 +38,173 @@ const Profile = async () => {
         <Badge variant="secondary">Special Plan</Badge>
       </div>
 
-      {/* OpenRouter Credits */}
+      {/* API Keys Section with Tabs */}
       <Card className="mb-6 p-4 rounded-lg">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center">
-            <span className="text-xs font-bold">OR</span>
-          </div>
-          <h3 className="text-sm font-medium">OpenRouter Credits</h3>
-        </div>
-        
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl font-bold">$ {creditData?.data?.total_credits || 0}</span>
-            <Info className="w-4 h-4 text-muted-foreground" />
-          </div>
-          <Link target="_blank" href="https://openrouter.ai/settings/credits" >
-          <Button size="sm" className="rounded-full">
-            Add credits
-          </Button>
-          </Link>
+        <Tabs defaultValue="openrouter" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-4">
+            <TabsTrigger value="openrouter" className="flex items-center gap-2">
+              <OpenRouter.Avatar size={16} />
+              OpenRouter
+            </TabsTrigger>
+            <TabsTrigger value="gemini" className="flex items-center gap-2">
+              <Gemini.Avatar size={16} />
+              Gemini
+            </TabsTrigger>
+          </TabsList>
 
-        </div>
+          {/* OpenRouter Tab Content */}
+          <TabsContent value="openrouter" className="mt-0">
+            {user?.openRouterApiKey ? (
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <OpenRouter.Avatar size={32} />
+                  <h3 className="text-sm font-medium">OpenRouter Credits</h3>
+                </div>
 
-        <div className="mb-4">
-          <div className="bg-muted/50 rounded-lg p-3 mb-3">
-            <div className="flex items-start gap-2">
-              <AlertTriangle className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
-              <div className="text-xs text-muted-foreground">
-                <span>You are on the OpenRouter free tier. Some requests may be rate-limited or fail. Please add some credits to your account. </span>
-                <Link target="_blank" href="https://openrouter.ai/docs/api-reference/limits#rate-limits-and-credits-remaining" >
-                <span className="text-orange-600 underline cursor-pointer">Learn More</span>
-                </Link>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl font-bold">
+                      $ {creditData?.data?.total_credits?.toFixed(2)}
+                    </span>
+                    <Info className="w-4 h-4 text-muted-foreground" />
+                  </div>
+                  <Link
+                    target="_blank"
+                    href="https://openrouter.ai/settings/credits"
+                  >
+                    <Button size="sm" className="rounded-full">
+                      Add credits
+                    </Button>
+                  </Link>
+                </div>
+
+                <div className="mb-4">
+                  <div className="bg-muted/50 rounded-lg p-3 mb-3">
+                    <div className="flex items-start gap-2">
+                      <AlertTriangle className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
+                      <div className="text-xs text-muted-foreground">
+                        <span>
+                          You are on the OpenRouter free tier. Some requests may
+                          be rate-limited or fail. Please add some credits to
+                          your account.{" "}
+                        </span>
+                        <Link
+                          target="_blank"
+                          href="https://openrouter.ai/docs/api-reference/limits#rate-limits-and-credits-remaining"
+                        >
+                          <span className="text-orange-600 underline cursor-pointer">
+                            Learn More
+                          </span>
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between bg-muted rounded-lg px-3 py-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-mono">sk-or-v1-d5a...</span>
+                    </div>
+                    <DisconnectButton />
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-          
-          <div className="flex items-center justify-between bg-muted rounded-lg px-3 py-2">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-mono">sk-or-v1-d5a...</span>
-            </div>
-            <DisconnectButton />
-          </div>
-        </div>
+            ) : (
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <OpenRouter.Avatar size={32} />
+                  <h3 className="text-sm font-medium">OpenRouter Connection</h3>
+                </div>
+
+                <div className="mb-4">
+                  <p className="text-sm text-muted-foreground mb-6">
+                    Connect OpenRouter to access various AI models with flexible
+                    pricing.
+                  </p>
+
+                  <div className="flex justify-start">
+                    <Link href="/connect?service=openrouter">
+                      <Button size="lg" className="rounded-full" variant="t3">
+                        Connect OpenRouter
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Gemini Tab Content */}
+          <TabsContent value="gemini" className="mt-0">
+            {user?.geminiApiKey ? (
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <Gemini.Avatar size={32} />
+                  <h3 className="text-sm font-medium">Gemini API Connected</h3>
+                </div>
+
+                <div className="mb-4">
+                  <div className="bg-background border border-input rounded-lg p-3 mb-3">
+                    <div className="flex items-start gap-2">
+                      <div className="text-xs text-primary">
+                        <span>
+                          Your Gemini API key is active. You can now use
+                          Google's latest AI models including Gemini Pro and
+                          Ultra.
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between bg-muted rounded-lg px-3 py-2">
+                    <div className="flex items-center gap-2">
+                      <Key className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm font-mono">
+                        AIza...{user.geminiApiKey?.slice(-4)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-start">
+                  <Link  href="/connect?service=gemini">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="rounded-full"
+                    >
+                      Manage API Key
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                 <Gemini.Avatar size={32} />
+                  <h3 className="text-sm font-medium">Gemini API Connection</h3>
+                </div>
+
+                <div className="mb-4">
+                  <p className="text-sm text-muted-foreground mb-6">
+                    Connect your Gemini API key to access Google's powerful AI
+                    models directly.
+                  </p>
+
+                  <div className="flex justify-start">
+                    <Link href="/connect?service=gemini">
+                      <Button size="lg" className="rounded-full" variant="t3">
+                        Connect Gemini API
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </Card>
-
-      {/* Message Usage */}
-      {/* <div className="mb-6 mt-6 bg-black p-4 rounded-lg">
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-sm font-medium text-zinc-300">
-            Message Usage
-          </span>
-          <span className="text-xs text-zinc-500">
-            Resets tomorrow at 5:30 AM
-          </span>
-        </div>
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-sm text-zinc-400">Standard</span>
-          <span className="text-sm text-zinc-400">1/20</span>
-        </div>
-        <Progress value={message} className="mb-2" />
-        <p className="text-xs text-zinc-500">{message} messages remaining</p>
-      </div> */}
-
-      {/* Keyboard Shortcuts */}
-      {/* <Card className="mt-6 p-4 rounded-lg">
-        <h3 className="text-sm font-medium mb-4">Keyboard Shortcuts</h3>
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <span className="text-sm">Search</span>
-            <div className="flex gap-1">
-              <Badge variant="secondary">
-                <kbd className="px-2 py-1">Ctrl</kbd>
-              </Badge>
-              <Badge variant="secondary">
-                <kbd className="px-2 py-1">K</kbd>
-              </Badge>
-            </div>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-sm">New Chat</span>
-            <div className="flex gap-1">
-              <Badge variant="secondary">
-                <kbd className="px-2 py-1">Ctrl</kbd>
-              </Badge>
-              <Badge variant="secondary">
-                <kbd className="px-2 py-1">Shift</kbd>
-              </Badge>
-              <Badge variant="secondary">
-                <kbd className="px-2 py-1">O</kbd>
-              </Badge>
-            </div>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-sm">Toggle Sidebar</span>
-            <div className="flex gap-1">
-              <Badge variant="secondary">
-                <kbd className="px-2 py-1">Ctrl</kbd>
-              </Badge>
-              <Badge variant="secondary">
-                <kbd className="px-2 py-1">B</kbd>
-              </Badge>
-            </div>
-          </div>
-        </div>
-      </Card> */}
     </div>
   );
 };
-
-
 
 export default Profile;

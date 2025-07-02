@@ -30,10 +30,11 @@ import { useStreamResponse } from "@/hooks/use-response-stream";
 import { useCloudinaryUpload } from "@/hooks/use-upload"; // Import the hook
 import SearchModels from "./search-models";
 import { FiLoader } from "react-icons/fi";
-import OpenRouterConnect from "../open-router/open-router-connect";
+import OpenRouterConnect from "../connect-key/open-router-connect";
 import userStore from "@/stores/user.store";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import DevTooltip from "../global-cmp/dev-tooltip";
 
 interface ChatInputProps {
   placeholder?: string;
@@ -50,8 +51,7 @@ function ChatInput({
 }: ChatInputProps) {
   const params = useParams();
   const router = useRouter();
-  const { userData } = userStore();
-  const { error, sendMessage, clearMessages } = useStreamResponse();
+  const { sendMessage } = useStreamResponse();
   const {
     setQuery,
     setMessages,
@@ -136,35 +136,22 @@ function ChatInput({
 
   // Handle form submission
   const handleSubmit = async () => {
-    if (!userData) {
+    if (!userStore.getState().userData) {
       toast.info("Please login to start chatting");
       router.push("/auth");
       return;
     }
     if (
-      !userData?.openRouterApiKey ||
-      userData?.openRouterApiKey.trim() == ""
+      !userStore.getState().userData?.openRouterApiKey &&
+      !userStore.getState().userData?.geminiApiKey
     ) {
-      console.log(
-        "Please connect your OpenRouter account to start chatting",
-        userData
-      );
-      toast.info("Please connect your OpenRouter account to start chatting");
+      toast.info("Please connect to AI Services to start chatting");
       router.push("/connect");
       return;
     }
     const generatedId = generateUUID();
     setIsRegenerate(false);
     if (!params.chatid) {
-      createThread({ title: query, threadId: generatedId })
-        .then((res) => {
-          if (res.data) {
-            queryClient.invalidateQueries({ queryKey: ["threads"] });
-          }
-        })
-        .catch((error) => {
-          console.error("Thread creation failed:", error);
-        });
       setMessages([]);
       router.push(`/chat/${generatedId}`);
     }
@@ -172,7 +159,12 @@ function ChatInput({
       chatid: (params.chatid as string) || generatedId,
       attachmentUrl: attachmentUrl,
       resetAttachment: handleRemoveAttachment,
+      isNewThread: !params.chatid,
     });
+
+    if (!params.chatid) {
+      queryClient.invalidateQueries({ queryKey: ["threads"] });
+    }
     handleRemoveAttachment();
   };
 
@@ -183,11 +175,11 @@ function ChatInput({
   };
 
   return (
-    <div className="absolute !bottom-0 h-fit inset-x-0 w-full">
+    <div className="absolute  !bottom-0 h-fit inset-x-0 w-full">
       <div className="rounded-t-[20px] bg-chat-input-background/80 relative dark:bg-secondary/30 p-2 pb-0 backdrop-blur-lg ![--c:--chat-input-gradient] border-x border-secondary-foreground/5 gradBorder">
         <form
           onSubmit={handleFormSubmit}
-          className="relative flex w-full pb-2 flex-col items-stretch gap-2 rounded-t-xl border border-b-0 border-white/70 dark:border-secondary-foreground/5 bg-chat-input-background px-3 pt-3 text-secondary-foreground outline-8 outline-chat-input-gradient/50 dark:outline-chat-input-gradient/5 pb-safe-offset-3 max-sm:pb-6 sm:max-w-3xl dark:bg-secondary/30"
+          className="relative flex w-full pb-2 flex-col items-stretch gap-2 rounded-t-xl border border-b-0 border-white/70 dark:border-secondary-foreground/5 bg-chat-input-background px-3 pt-3 text-secondary-foreground outline-8 outline-chat-input-gradient/50 dark:outline-chat-input-gradient/5 pb-safe-offset-3  sm:max-w-3xl dark:bg-secondary/30"
           style={{
             boxShadow:
               "rgba(0, 0, 0, 0.1) 0px 80px 50px 0px, rgba(0, 0, 0, 0.07) 0px 50px 30px 0px, rgba(0, 0, 0, 0.06) 0px 30px 15px 0px, rgba(0, 0, 0, 0.04) 0px 15px 8px, rgba(0, 0, 0, 0.04) 0px 6px 4px, rgba(0, 0, 0, 0.02) 0px 2px 2px",
@@ -269,12 +261,13 @@ function ChatInput({
                   <SearchModels />
 
                   {/* Search Button */}
-                  <Button
-                    type="button"
-                    variant={isWebSearch ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setIsWebSearch(!isWebSearch)}
-                    className={`
+                  <DevTooltip tipData="Web Search">
+                    <Button
+                      type="button"
+                      variant={isWebSearch ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setIsWebSearch(!isWebSearch)}
+                      className={`
                       ${
                         isWebSearch
                           ? "bg-primary"
@@ -282,37 +275,40 @@ function ChatInput({
                       }
                       !rounded-full text-xs !h-auto py-1.5 !px-2
                       `}
-                    aria-label={
-                      isSearchEnabled
-                        ? "Web search"
-                        : "Web search not available on free plan"
-                    }
-                    disabled={uploadState.isUploading}
-                  >
-                    <Globe className="h-4 w-4" />
-                    <span className="max-sm:hidden">Search</span>
-                  </Button>
+                      aria-label={
+                        isSearchEnabled
+                          ? "Web search"
+                          : "Web search not available on free plan"
+                      }
+                      disabled={uploadState.isUploading}
+                    >
+                      <Globe className="h-4 w-4" />
+                      <span className="max-sm:hidden">Search</span>
+                    </Button>
+                  </DevTooltip>
 
                   {/* File Attach Button */}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="bg-transparent hover:bg-muted/40 !rounded-full text-xs !h-auto py-1.5 !px-2.5"
-                    aria-label={
-                      isFileAttachEnabled
-                        ? "Attach file"
-                        : "Attaching files is a subscriber-only feature"
-                    }
-                    disabled={
-                      !isFileAttachEnabled || isLoading || attachmentUrl
-                        ? true
-                        : false || uploadState.isUploading
-                    }
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <Paperclip className="size-4" />
-                  </Button>
+                  <DevTooltip tipData="Attach File (only Image)">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="bg-transparent hover:bg-muted/40 !rounded-full text-xs !h-auto py-1.5 !px-2.5"
+                      aria-label={
+                        isFileAttachEnabled
+                          ? "Attach file"
+                          : "Attaching files is a subscriber-only feature"
+                      }
+                      disabled={
+                        !isFileAttachEnabled || isLoading || attachmentUrl
+                          ? true
+                          : false || uploadState.isUploading
+                      }
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <Paperclip className="size-4" />
+                    </Button>
+                  </DevTooltip>
 
                   {/* Hidden File Input */}
                   <input

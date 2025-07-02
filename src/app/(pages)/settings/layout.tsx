@@ -2,8 +2,14 @@ import React from "react";
 import Profile from "@/components/settings/profile";
 import Header from "@/components/settings/header";
 import TabNavigation from "@/components/settings/tab-navigation";
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
 
-const layout = ({ children }: { children: React.ReactNode }) => {
+const layout = async ({ children }: { children: React.ReactNode }) => {
+  const session = await auth();
+  if(!session){
+    return redirect("/");
+  }
   return (
     <div className="md:max-w-7xl md:mx-auto md:p-10 p-4">
       <Header />
