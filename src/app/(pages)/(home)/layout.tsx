@@ -38,7 +38,7 @@ import DevTooltip from "@/components/global-cmp/dev-tooltip";
 
 async function ChatLayoutContent({ children }: { children: React.ReactNode }) {
   const session = await auth();
-    console.log(session, "user session");
+  console.log(session, "user session");
   return (
     <div className={` h-dvh w-full flex flex-col overflow-hidden `}>
       <ChatHeader />
@@ -87,11 +87,11 @@ async function ChatLayoutContent({ children }: { children: React.ReactNode }) {
           name="sidebar-check"
         />
         <Link href="/settings/subscription">
-        <DevTooltip tipData="Settings">
-        <Button variant="ghost" size="icon">
-          <LuSettings2 />
-        </Button>
-        </DevTooltip>
+          <DevTooltip tipData="Settings">
+            <Button variant="ghost" size="icon">
+              <LuSettings2 />
+            </Button>
+          </DevTooltip>
         </Link>
         <ThemeToggle />
       </div>
@@ -174,6 +174,16 @@ export default async function ChatLayout({
             </SidebarMenu>
           </SidebarFooter>
           <SidebarRail />
+          <span className="text-xs bg-accent p-0.5 pl-5 *:underline *:text-muted-foreground">
+            Built by{" "}
+            <a target="_blank" href="https://devyanshyadav.com">
+              Devyansh{" "}
+            </a>{" "}
+            and{" "}
+            <a target="_blank" href="https://aasuyadav.com">
+              Aasu
+            </a>
+          </span>
         </Sidebar>
 
         <ChatLayoutContent>{children}</ChatLayoutContent>
