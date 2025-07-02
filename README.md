@@ -13,6 +13,7 @@ A powerful, feature-rich clone of [t3.chat](https://t3.chat) with advanced AI ca
 - **🧠 Smart Prompt Engineering** - Optimized AI behavior for relevant responses
 - **🔗 OpenRouter Integration** - Effortless access to multiple LLM models
 - **🤖 100+ LLM Models Access** - Wide variety of AI models for different use cases
+- **🤖 Smart Workspace Management** - Seamlessly Create, update, and delete workspaces
 
 ## 🚀 Getting Started
 
